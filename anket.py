@@ -37,7 +37,8 @@ sorular = [
     "Ders, kuramsal bilgiler ile uygulama arasındaki ilişkiyi anlamama yardımcı oldu."
 ]
 
-options = ["K. Katılmıyorum", "Katılmıyorum", "Fikrim Yok", "Katılıyorum", "K. Katılıyorum"]
+# 3. Güncellenmiş Seçenekler (6 Seçenek)
+options = ["K. Katılmıyorum", "Katılmıyorum", "Fikrim Yok", "Katılıyorum", "K. Katılıyorum", "Dersi almıyorum"]
 
 # --- DURUM YÖNETİMİ ---
 if 'current_step' not in st.session_state:
@@ -68,7 +69,7 @@ if st.session_state.current_step < 20:
     
     current_responses = []
     for ders in aktif_dersler:
-        # Mobilde daha kolay kullanım için select_slider (kaydırıcı)
+        # 6 seçenekli kaydırıcı
         cevap = st.select_slider(
             f"**{ders}**",
             options=options,
@@ -77,7 +78,6 @@ if st.session_state.current_step < 20:
         )
         current_responses.append({"Sinif": sinif, "Ders": ders, "Soru_No": s_no + 1, "Puan": cevap})
     
-    # Buton Metni Dinamik Değişir
     button_label = "Sonraki Soruya Geç ➡️" if s_no < 19 else "Yanıtları Onayla ve Bitir ✔️"
     
     if st.button(button_label, use_container_width=True):
@@ -87,24 +87,19 @@ if st.session_state.current_step < 20:
 
 else:
     # --- GÖNDERME EKRANI ---
-    st.success("Tebrikler! 20 sorunun tamamını yanıtladınız.")
-    st.warning("Verilerinizin kaydedilmesi için aşağıdaki butona basmayı unutmayın!")
-    
+    st.success("Tebrikler! Soruların tamamını yanıtladınız.")
     if st.button("🚀 VERİLERİ SİSTEME GÖNDER", use_container_width=True):
-        # BURAYA KENDİ GOOGLE SCRIPT URL'NİZİ YAPIŞTIRIN
         script_url = "https://script.google.com/macros/s/AKfycbwjMMwluGWitBAfCL5gQlNnPH7wzp_9Ailz1yS9bHhfch5U5wRGQvjXv_khBU5aEMX_/exec" 
         
-        with st.spinner('Veriler Google Sheets tablonuza aktarılıyor...'):
+        with st.spinner('Veriler kaydediliyor...'):
             try:
-                # Toplam veriyi gönder
                 response = requests.post(script_url, json=st.session_state.all_data)
                 if response.text == "Başarılı":
                     st.balloons()
-                    st.success("Tüm verileriniz başarıyla kaydedildi. Katkılarınız için teşekkür ederiz!")
-                    # İşlem bitince temizle
+                    st.success("Tüm verileriniz başarıyla kaydedildi!")
                     st.session_state.current_step = 0
                     st.session_state.all_data = []
                 else:
-                    st.error(f"Hata oluştu: {response.text}")
+                    st.error(f"Hata: {response.text}")
             except Exception as e:
                 st.error(f"Bağlantı hatası: {e}")
