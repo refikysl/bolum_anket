@@ -3,7 +3,7 @@ import pandas as pd
 import requests
 
 # Sayfa Ayarları
-st.set_page_config(page_title="SBKY Anketi", layout="wide")
+st.set_page_config(page_title="SBKY Bölüm Anketi", layout="wide")
 
 # 1. Ders Listesi
 ders_programi = {
@@ -39,20 +39,23 @@ sorular = [
 
 options = ["K. Katılmıyorum", "Katılmıyorum", "Fikrim Yok", "Katılıyorum", "K. Katılıyorum"]
 
-# --- DURUM YÖNETİMİ (Session State) ---
+# --- DURUM YÖNETİMİ ---
 if 'current_step' not in st.session_state:
     st.session_state.current_step = 0
 if 'all_data' not in st.session_state:
     st.session_state.all_data = []
 
-# Başlık
 st.title("🏛️ SBKY Bölüm Anketi")
 
-# Sınıf Seçimi (Sadece ilk adımda gösterilir veya yan menüye alınır)
 with st.sidebar:
     sinif = st.selectbox("Sınıfınızı Seçiniz:", list(ders_programi.keys()))
-    st.write(f"İlerleme: {st.session_state.current_step + 1} / 20")
-    st.progress((st.session_state.current_step + 1) / 20)
+    progress = min((st.session_state.current_step + 1) / 20, 1.0)
+    st.write(f"Soru: {min(st.session_state.current_step + 1, 20)} / 20")
+    st.progress(progress)
+    if st.button("Anketi Sıfırla"):
+        st.session_state.current_step = 0
+        st.session_state.all_data = []
+        st.rerun()
 
 aktif_dersler = ders_programi[sinif]
 
@@ -61,12 +64,11 @@ if st.session_state.current_step < 20:
     s_no = st.session_state.current_step
     soru_metni = sorular[s_no]
     
-    # SORU METNİ - HER ZAMAN TEPEDE DURUR
     st.info(f"**SORU {s_no + 1}:** {soru_metni}")
     
-    # CEVAP ALANI
     current_responses = []
     for ders in aktif_dersler:
+        # Mobilde daha kolay kullanım için select_slider (kaydırıcı)
         cevap = st.select_slider(
             f"**{ders}**",
             options=options,
@@ -75,26 +77,34 @@ if st.session_state.current_step < 20:
         )
         current_responses.append({"Sinif": sinif, "Ders": ders, "Soru_No": s_no + 1, "Puan": cevap})
     
-    # BUTONLAR
-    if st.button("Sonraki Soruya Geç ➡️"):
+    # Buton Metni Dinamik Değişir
+    button_label = "Sonraki Soruya Geç ➡️" if s_no < 19 else "Yanıtları Onayla ve Bitir ✔️"
+    
+    if st.button(button_label, use_container_width=True):
         st.session_state.all_data.extend(current_responses)
         st.session_state.current_step += 1
         st.rerun()
 
 else:
     # --- GÖNDERME EKRANI ---
-    st.success("Tüm soruları yanıtladınız! Şimdi sisteme gönderebilirsiniz.")
-    if st.button("🚀 ANKETİ TAMAMLA VE GÖNDER"):
+    st.success("Tebrikler! 20 sorunun tamamını yanıtladınız.")
+    st.warning("Verilerinizin kaydedilmesi için aşağıdaki butona basmayı unutmayın!")
+    
+    if st.button("🚀 VERİLERİ SİSTEME GÖNDER", use_container_width=True):
+        # BURAYA KENDİ GOOGLE SCRIPT URL'NİZİ YAPIŞTIRIN
         script_url = "https://script.google.com/macros/s/AKfycbwjMMwluGWitBAfCL5gQlNnPH7wzp_9Ailz1yS9bHhfch5U5wRGQvjXv_khBU5aEMX_/exec" 
-        with st.spinner('Kaydediliyor...'):
+        
+        with st.spinner('Veriler Google Sheets tablonuza aktarılıyor...'):
             try:
+                # Toplam veriyi gönder
                 response = requests.post(script_url, json=st.session_state.all_data)
                 if response.text == "Başarılı":
                     st.balloons()
-                    st.success("Cevaplarınız başarıyla iletildi!")
-                    st.session_state.current_step = 0 # Sıfırla
+                    st.success("Tüm verileriniz başarıyla kaydedildi. Katkılarınız için teşekkür ederiz!")
+                    # İşlem bitince temizle
+                    st.session_state.current_step = 0
                     st.session_state.all_data = []
                 else:
-                    st.error(f"Hata: {response.text}")
+                    st.error(f"Hata oluştu: {response.text}")
             except Exception as e:
                 st.error(f"Bağlantı hatası: {e}")
