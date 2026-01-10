@@ -5,35 +5,6 @@ import requests
 # Sayfa Ayarları
 st.set_page_config(page_title="SBKY Anketi", layout="wide")
 
-# --- GÜVENLİ STICKY CSS (Sadece Soruya Odaklı) ---
-st.markdown("""
-    <style>
-    .stHeader {
-        z-index: 100;
-    }
-    .sticky-box {
-        position: -webkit-sticky;
-        position: sticky;
-        top: 0px;
-        background-color: #1f77b4;
-        color: white;
-        padding: 15px;
-        border-radius: 8px;
-        z-index: 99;
-        margin-top: 10px;
-        margin-bottom: 10px;
-        font-weight: bold;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-    .answer-card {
-        background-color: #f0f2f6;
-        padding: 10px;
-        border-radius: 8px;
-        margin-bottom: 25px;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
 # 1. Ders Listesi
 ders_programi = {
     "Sınıf 1": ["Medeniyet Tarihi 1", "Siyaset Bilimi 1", "Hukukun Temel Kavramları", "Sosyoloji", "Sosyal Bilimlerde İstatistik", "Türk İdare Tarihi", "Araştırma Yöntem ve Teknikleri"],
@@ -68,39 +39,62 @@ sorular = [
 
 options = ["K. Katılmıyorum", "Katılmıyorum", "Fikrim Yok", "Katılıyorum", "K. Katılıyorum"]
 
+# --- DURUM YÖNETİMİ (Session State) ---
+if 'current_step' not in st.session_state:
+    st.session_state.current_step = 0
+if 'all_data' not in st.session_state:
+    st.session_state.all_data = []
+
+# Başlık
 st.title("🏛️ SBKY Bölüm Anketi")
-sinif = st.selectbox("Sınıfınızı Seçiniz:", list(ders_programi.keys()))
+
+# Sınıf Seçimi (Sadece ilk adımda gösterilir veya yan menüye alınır)
+with st.sidebar:
+    sinif = st.selectbox("Sınıfınızı Seçiniz:", list(ders_programi.keys()))
+    st.write(f"İlerleme: {st.session_state.current_step + 1} / 20")
+    st.progress((st.session_state.current_step + 1) / 20)
 
 aktif_dersler = ders_programi[sinif]
-form_cevaplari = []
 
-# --- ANKET DÖNGÜSÜ ---
-for s_no, soru_metni in enumerate(sorular, 1):
-    # Yapışkan Soru Başlığı
-    st.markdown(f'<div class="sticky-box">SORU {s_no}: {soru_metni}</div>', unsafe_allow_html=True)
+# --- ANKET EKRANI ---
+if st.session_state.current_step < 20:
+    s_no = st.session_state.current_step
+    soru_metni = sorular[s_no]
     
-    # Cevap Alanı
-    with st.container():
-        cols = st.columns(len(aktif_dersler))
-        for idx, ders in enumerate(aktif_dersler):
-            with cols[idx]:
-                cevap = st.radio(f"**{ders}**", options, index=2, key=f"q{s_no}_{ders}")
-                form_cevaplari.append({"Sinif": sinif, "Ders": ders, "Soru_No": s_no, "Puan": cevap})
+    # SORU METNİ - HER ZAMAN TEPEDE DURUR
+    st.info(f"**SORU {s_no + 1}:** {soru_metni}")
     
-    st.divider()
+    # CEVAP ALANI
+    current_responses = []
+    for ders in aktif_dersler:
+        cevap = st.select_slider(
+            f"**{ders}**",
+            options=options,
+            value="Fikrim Yok",
+            key=f"step_{s_no}_{ders}"
+        )
+        current_responses.append({"Sinif": sinif, "Ders": ders, "Soru_No": s_no + 1, "Puan": cevap})
+    
+    # BUTONLAR
+    if st.button("Sonraki Soruya Geç ➡️"):
+        st.session_state.all_data.extend(current_responses)
+        st.session_state.current_step += 1
+        st.rerun()
 
-# --- GÖNDERME BUTONU ---
-if st.button("🚀 ANKETİ TAMAMLA VE GÖNDER", use_container_width=True):
-    # BURAYA KENDİ SCRIPT URL'NİZİ YAPIŞTIRIN
-    script_url = "https://script.google.com/macros/s/AKfycbwjMMwluGWitBAfCL5gQlNnPH7wzp_9Ailz1yS9bHhfch5U5wRGQvjXv_khBU5aEMX_/exec" 
-    
-    with st.spinner('Kaydediliyor...'):
-        try:
-            response = requests.post(script_url, json=form_cevaplari)
-            if response.text == "Başarılı":
-                st.balloons()
-                st.success("Cevaplarınız başarıyla iletildi!")
-            else:
-                st.error(f"Hata: {response.text}")
-        except Exception as e:
-            st.error(f"Bağlantı hatası: {e}")
+else:
+    # --- GÖNDERME EKRANI ---
+    st.success("Tüm soruları yanıtladınız! Şimdi sisteme gönderebilirsiniz.")
+    if st.button("🚀 ANKETİ TAMAMLA VE GÖNDER"):
+        script_url = "https://script.google.com/macros/s/AKfycbwjMMwluGWitBAfCL5gQlNnPH7wzp_9Ailz1yS9bHhfch5U5wRGQvjXv_khBU5aEMX_/exec" 
+        with st.spinner('Kaydediliyor...'):
+            try:
+                response = requests.post(script_url, json=st.session_state.all_data)
+                if response.text == "Başarılı":
+                    st.balloons()
+                    st.success("Cevaplarınız başarıyla iletildi!")
+                    st.session_state.current_step = 0 # Sıfırla
+                    st.session_state.all_data = []
+                else:
+                    st.error(f"Hata: {response.text}")
+            except Exception as e:
+                st.error(f"Bağlantı hatası: {e}")
