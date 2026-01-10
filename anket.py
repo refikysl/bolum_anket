@@ -98,7 +98,7 @@ if st.button("🚀 ANKETİ TAMAMLA VE SİSTEME GÖNDER", use_container_width=Tru
                 st.balloons()
                 st.snow() # Bonus efekt: Kar yağdır!
                 st.success("✅ Başarılı! Katkılarınız için teşekkür ederiz.")
-                st.confetti() # Eğer özel kütüphane varsa çalışır, yoksa hata vermez
+                
             else:
                 st.error(f"Hata oluştu: {response.text}")
         except Exception as e:
