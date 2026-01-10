@@ -3,18 +3,36 @@ import pandas as pd
 import requests
 
 # Sayfa Ayarları
-st.set_page_config(page_title="SBKY Akreditasyon Anketi", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="SBKY Akreditasyon Anketi", layout="wide", initial_sidebar_state="collapsed")
 
-# --- ARTİSTLİK DOKUNUŞ: ÖZEL CSS ---
+# --- ARTİSTLİK VE FONKSİYONEL DOKUNUŞ: STICKY QUESTION CSS ---
 st.markdown("""
     <style>
-    .main { background-color: #f5f7f9; }
-    .stRadio > label { font-weight: bold; color: #1f77b4; }
-    div[data-testid="stVerticalBlock"] > div:has(div.stInfo) {
-        border-radius: 15px;
-        padding: 10px;
+    /* Sorunun ekrana yapışmasını sağlayan sihirli kod */
+    .sticky-question {
+        position: -webkit-sticky;
+        position: sticky;
+        top: 0;
+        background-color: #1f77b4;
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        z-index: 999;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        font-weight: bold;
+    }
+    /* Mobil cihazlar için radyo buton aralıklarını optimize etme */
+    div.row-widget.stRadio > div {
+        flex-direction: column;
+    }
+    /* Kart yapısı */
+    .question-card {
         background-color: #ffffff;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        border: 1px solid #e6e9ef;
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 40px;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -51,55 +69,41 @@ sorular = [
     "Ders, kuramsal bilgiler ile uygulama arasındaki ilişkiyi anlamama yardımcı oldu."
 ]
 
-options = ["Kesinlikle katılmıyorum", "Katılmıyorum", "Fikrim yok", "Katılıyorum", "Kesinlikle katılıyorum"]
+options = ["K. Katılmıyorum", "Katılmıyorum", "Fikrim Yok", "Katılıyorum", "K. Katılıyorum"]
 
-# --- SIDEBAR (YAN MENÜ) TASARIMI ---
-with st.sidebar:
-    st.header("📊 Anket Durumu")
-    sinif = st.selectbox("Sınıfınızı Seçiniz:", list(ders_programi.keys()))
-    st.divider()
-    st.info("Her ders için tüm soruları yanıtladığınızdan emin olun.")
-
-# Ana Başlık
-st.title("🏛️ Siyaset Bilimi ve Kamu Yönetimi")
-st.subheader("Ders Değerlendirme ve Akreditasyon Anketi")
+st.title("🏛️ SBKY Ders Değerlendirme Anketi")
+sinif = st.selectbox("Lütfen Sınıfınızı Seçiniz:", list(ders_programi.keys()))
 
 aktif_dersler = ders_programi[sinif]
 form_cevaplari = []
 
-# --- ANKET OLUŞTURMA ---
+# --- ANKET OLUŞTURMA (Yapışkan Başlıklı Model) ---
 for s_no, soru_metni in enumerate(sorular, 1):
-    # Her soruyu şık bir kutu içine alıyoruz
+    # HTML kullanarak yapışkan başlık oluşturma
+    st.markdown(f'<div class="sticky-question">SORU {s_no}: {soru_metni}</div>', unsafe_allow_html=True)
+    
+    # Dersleri ve seçenekleri bir kapsayıcı içinde göster
     with st.container():
-        st.info(f"**SORU {s_no}:** {soru_metni}")
         cols = st.columns(len(aktif_dersler))
-        
         for idx, ders in enumerate(aktif_dersler):
             with cols[idx]:
-                cevap = st.radio(f"{ders}", options, index=2, key=f"q{s_no}_{ders}")
+                cevap = st.radio(f"**{ders}**", options, index=2, key=f"q{s_no}_{ders}")
                 form_cevaplari.append({"Sinif": sinif, "Ders": ders, "Soru_No": s_no, "Puan": cevap})
-    st.write("") # Boşluk bırak
-
-# --- İLERLEME ÇUBUĞU HESABI ---
-# (Sadece işaretlenenleri saymak yerine görsel olarak doluluk hissi verir)
-st.sidebar.write(f"**Değerlendirilen Ders Sayısı:** {len(aktif_dersler)}")
-st.sidebar.write(f"**Toplam Soru Sayısı:** {len(sorular)}")
-
-# --- GÖNDERME BUTONU VE EFEKTLER ---
-st.divider()
-if st.button("🚀 ANKETİ TAMAMLA VE SİSTEME GÖNDER", use_container_width=True):
-    # Sizin Google Apps Script URL'nizi buraya tekrar yapıştırın!
-    script_url = "https://script.google.com/macros/s/AKfycbwjMMwluGWitBAfCL5gQlNnPH7wzp_9Ailz1yS9bHhfch5U5wRGQvjXv_khBU5aEMX_/exec" 
     
-    with st.spinner('Verileriniz güvenli sunucuya aktarılıyor...'):
+    st.markdown('<hr style="border: 2px solid #f0f2f6;">', unsafe_allow_html=True)
+
+# --- GÖNDERME BUTONU ---
+if st.button("🚀 ANKETİ TAMAMLA VE GÖNDER", use_container_width=True):
+    # KENDİ GOOGLE SCRIPT URL'NİZİ BURAYA YAPIŞTIRIN
+    script_url = "https://script.google.com/macros/s/AKfycbwjMMwluGWitBAfCL5gQlNnPH7wzp_9Ailz1yS9bHhfch5U5wRGQvjXv_khBU5aEMX_/exec"
+    
+    with st.spinner('Veriler kaydediliyor...'):
         try:
             response = requests.post(script_url, json=form_cevaplari)
             if response.text == "Başarılı":
                 st.balloons()
-                st.snow() # Bonus efekt: Kar yağdır!
-                st.success("✅ Başarılı! Katkılarınız için teşekkür ederiz.")
-                
+                st.success("Cevaplarınız başarıyla iletildi!")
             else:
-                st.error(f"Hata oluştu: {response.text}")
+                st.error(f"Hata: {response.text}")
         except Exception as e:
             st.error(f"Bağlantı hatası: {e}")
