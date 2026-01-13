@@ -40,71 +40,75 @@ if 'selected_dersler' not in st.session_state:
 if 'selected_sinif' not in st.session_state:
     st.session_state.selected_sinif = None
 
-# --- STİL - MİNİMAL VE KOMPAKT ---
+# --- STİL - MİNİMAL, SIFIR BOŞLUK ---
 st.markdown("""
 <style>
-    /* Ana container - minimum padding */
+    /* Ana container - sıfır padding */
     .main .block-container {
-        padding-top: 0.5rem !important;
-        padding-bottom: 0.5rem !important;
+        padding-top: 0.2rem !important;
+        padding-bottom: 0.2rem !important;
     }
     
     /* SORU BAŞLIĞI - KOMPAKT */
     .soru-ust-kisim {
         background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
         color: white;
-        padding: 8px 12px;
-        border-radius: 6px;
-        margin-bottom: 10px;
+        padding: 6px 10px;
+        border-radius: 5px;
+        margin-bottom: 5px;
         position: sticky;
         top: 0;
         z-index: 100;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
     .soru-numara {
         font-size: 18px;
         font-weight: bold;
         color: #ffd700;
-        margin-bottom: 2px;
+        margin: 0;
+        padding: 0;
     }
     
     .soru-metni {
         font-size: 14px;
         line-height: 1.2;
+        margin: 2px 0 0 0;
+        padding: 0;
     }
     
-    /* DERS SATIRI - ÇOK KOMPAKT, YAN YANA */
-    .ders-satiri {
-        display: flex;
-        align-items: center;
+    /* ÖLÇEK AÇIKLAMASI - KÜÇÜK */
+    .olcek-aciklama {
+        text-align: center;
+        margin: 2px 0 5px 0;
+        padding: 3px;
+        background: #f8f9fa;
+        border-radius: 3px;
+        border: 1px solid #e0e0e0;
+        font-size: 11px;
+        color: #666;
+    }
+    
+    /* DERS BLOĞU - SIFIR BOŞLUK */
+    .ders-blok {
         margin: 0 !important;
-        padding: 4px 0 !important;
+        padding: 0 !important;
         border-bottom: 1px solid #f0f0f0;
-        min-height: 40px;
     }
     
+    /* DERS ADI - ÜSTTE, OKUNAKLI */
     .ders-adi {
-        font-size: 15px !important;
+        font-size: 16px !important;
         font-weight: 600 !important;
         color: #1e3a8a !important;
-        width: 45% !important;
-        padding-right: 10px !important;
-        margin: 0 !important;
-        display: flex;
-        align-items: center;
+        margin: 3px 0 1px 0 !important;
+        padding: 0 5px !important;
+        display: block;
     }
     
-    /* SLİDER - TEK PARÇA, DAR */
-    .slider-konteynir {
-        width: 55% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-    
+    /* SLİDER - TEK PARÇA, İNCE */
     .stSlider {
         margin: 0 !important;
-        padding: 0 !important;
+        padding: 0 5px 5px 5px !important;
     }
     
     .stSlider > div {
@@ -130,35 +134,16 @@ st.markdown("""
     }
     
     .stSlider > div > div > div > div > div {
-        height: 18px !important;
-        width: 18px !important;
+        height: 16px !important;
+        width: 16px !important;
         margin: 0 !important;
     }
     
-    /* Slider değer göstergesi - slider'ın üzerinde */
-    .slider-deger {
-        font-size: 12px;
-        font-weight: bold;
-        color: #1e3a8a;
-        text-align: center;
-        margin-top: 2px;
-    }
-    
-    /* Ölçek açıklaması - küçük */
-    .olcek-aciklama {
-        text-align: center;
-        margin: 5px 0 8px 0;
-        padding: 4px;
-        background: #f8f9fa;
-        border-radius: 4px;
-        border: 1px solid #e0e0e0;
-        font-size: 11px;
-        color: #666;
-    }
+    /* PUAN GÖSTERGESİ KALDIRILDI - YOK */
     
     /* Buton */
     .stButton > button {
-        margin: 5px 0 !important;
+        margin: 8px 0 5px 0 !important;
         padding: 8px !important;
         font-size: 14px !important;
     }
@@ -166,8 +151,8 @@ st.markdown("""
     /* MOBİL İÇİN */
     @media (max-width: 768px) {
         .soru-ust-kisim {
-            padding: 6px 10px;
-            margin-bottom: 8px;
+            padding: 5px 8px;
+            margin-bottom: 4px;
         }
         
         .soru-numara {
@@ -179,34 +164,24 @@ st.markdown("""
         }
         
         .ders-adi {
-            font-size: 14px !important;
-            width: 50% !important;
-        }
-        
-        .slider-konteynir {
-            width: 50% !important;
+            font-size: 15px !important;
         }
         
         .olcek-aciklama {
             font-size: 10px;
-            padding: 3px;
-            margin: 3px 0 6px 0;
+            padding: 2px;
+            margin: 2px 0 4px 0;
         }
         
-        .slider-deger {
-            font-size: 11px;
+        .stSlider {
+            padding: 0 5px 4px 5px !important;
         }
     }
     
     /* Çok küçük ekranlar için */
     @media (max-width: 480px) {
         .ders-adi {
-            font-size: 13px !important;
-            width: 55% !important;
-        }
-        
-        .slider-konteynir {
-            width: 45% !important;
+            font-size: 14px !important;
         }
     }
 </style>
@@ -218,11 +193,11 @@ st.title("🏛️ SBKY Bölümü Ders Değerlendirme Anketi")
 # --- SORU 0: SINIF VE DERS SEÇİMİ ---
 if st.session_state.current_step == 0:
     st.markdown("""
-    <div style="background-color: #f0f8ff; padding: 12px; border-radius: 6px; border-left: 4px solid #1e3a8a; margin-bottom: 15px; color: #000000;">
+    <div style="background-color: #f0f8ff; padding: 10px; border-radius: 5px; border-left: 4px solid #1e3a8a; margin-bottom: 12px; color: #000000;">
     <h4 style="color: #1e3a8a; margin-top: 0; font-size: 16px;">📝 Değerli Öğrencimiz,</h4>
-    <p style="font-size: 13px; margin-bottom: 8px;">Bölümümüzün eğitim kalitesini artırmak için düzenlenen bu ankette, lütfen derslerinizi değerlendiriniz.</p>
-    <p style="font-size: 13px; margin-bottom: 8px;"><strong>Adımlar:</strong></p>
-    <ol style="font-size: 13px; margin-bottom: 8px;">
+    <p style="font-size: 13px; margin-bottom: 6px;">Bölümümüzün eğitim kalitesini artırmak için düzenlenen bu ankette, lütfen derslerinizi değerlendiriniz.</p>
+    <p style="font-size: 13px; margin-bottom: 6px;"><strong>Adımlar:</strong></p>
+    <ol style="font-size: 13px; margin-bottom: 6px;">
         <li>Sınıfınızı seçin</li>
         <li>Aldığınız dersleri işaretleyin</li>
         <li>13 soruyu yanıtlayın (her soru için derslere 1-5 arası puan verin)</li>
@@ -232,7 +207,7 @@ if st.session_state.current_step == 0:
     """, unsafe_allow_html=True)
     
     # Sınıf seçimi
-    st.markdown("<h4 style='font-size: 16px; margin-bottom: 8px;'>📋 Sınıfınızı Seçiniz:</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='font-size: 16px; margin-bottom: 6px;'>📋 Sınıfınızı Seçiniz:</h4>", unsafe_allow_html=True)
     sinif = st.selectbox(
         "",
         list(ders_programi.keys()),
@@ -248,8 +223,8 @@ if st.session_state.current_step == 0:
     st.markdown("---")
     
     # Ders seçimi
-    st.markdown(f"<h4 style='font-size: 16px; margin-bottom: 8px;'>📚 {sinif} Dersleriniz:</h4>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 13px; margin-bottom: 8px;'><strong>Bu yarıyılda aldığınız dersleri işaretleyiniz.</strong></p>", unsafe_allow_html=True)
+    st.markdown(f"<h4 style='font-size: 16px; margin-bottom: 6px;'>📚 {sinif} Dersleriniz:</h4>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 13px; margin-bottom: 6px;'><strong>Bu yarıyılda aldığınız dersleri işaretleyiniz.</strong></p>", unsafe_allow_html=True)
     
     aktif_dersler = ders_programi[sinif]
     selected_dersler = []
@@ -287,7 +262,7 @@ elif 1 <= st.session_state.current_step <= 13:
     # Sadece seçili dersleri kullan
     aktif_dersler = st.session_state.selected_dersler
     
-    # SABİT SORU BAŞLIĞI - ÇOK KOMPAKT
+    # SABİT SORU BAŞLIĞI - KOMPAKT
     st.markdown(f"""
     <div class="soru-ust-kisim">
         <div class="soru-numara">❓ Soru {s_no + 1} / 13</div>
@@ -295,7 +270,7 @@ elif 1 <= st.session_state.current_step <= 13:
     </div>
     """, unsafe_allow_html=True)
     
-    # Ölçek açıklaması - ÇOK KÜÇÜK
+    # Ölçek açıklaması - KÜÇÜK
     st.markdown("""
     <div class="olcek-aciklama">
         <strong>1 = Kesinlikle Katılmıyorum</strong> | <strong>5 = Kesinlikle Katılıyorum</strong>
@@ -304,30 +279,25 @@ elif 1 <= st.session_state.current_step <= 13:
     
     current_responses = []
     
-    # Dersleri TEK SATIRDA gösteriyoruz - DERS ADI + SLİDER YAN YANA
+    # Dersleri ÜST ÜSTE - SIFIR BOŞLUK
     for idx, ders in enumerate(aktif_dersler):
-        # Tek satır container
-        st.markdown(f'<div class="ders-satiri" id="ders_{idx}">', unsafe_allow_html=True)
+        # Ders bloğu
+        st.markdown(f'<div class="ders-blok" id="ders_{idx}">', unsafe_allow_html=True)
         
-        # Ders adı - sol taraf
-        col1, col2 = st.columns([4.5, 5.5])
+        # Ders adı - ÜSTTE
+        st.markdown(f'<div class="ders-adi">{idx+1}. {ders}</div>', unsafe_allow_html=True)
         
-        with col1:
-            st.markdown(f'<div class="ders-adi">{idx+1}. {ders}</div>', unsafe_allow_html=True)
-        
-        with col2:
-            # Puanlama slider'ı (1-5) - TEK PARÇA, DAR
-            puan = st.slider(
-                "",
-                min_value=1,
-                max_value=5,
-                value=3,
-                key=f"step_{s_no}_{ders}",
-                label_visibility="collapsed"
-            )
-            
-            # Puan değeri slider'ın altında küçük yazı
-            st.markdown(f'<div class="slider-deger">{puan}</div>', unsafe_allow_html=True)
+        # Puanlama slider'ı (1-5) - ALTTA, TEK PARÇA
+        # NOT: value parametresi slider'ın başlangıç değeri, ama kullanıcı değiştirebilir
+        puan = st.slider(
+            "",  # Boş label
+            min_value=1,
+            max_value=5,
+            value=3,  # Varsayılan orta değer
+            key=f"step_{s_no}_{ders}",
+            label_visibility="collapsed"
+        )
+        # NOT: Slider'ın seçili değerini göstermiyoruz, sadece slider kendisi gösteriyor
         
         current_responses.append({
             "Sinif": st.session_state.selected_sinif, 
@@ -338,7 +308,7 @@ elif 1 <= st.session_state.current_step <= 13:
         
         st.markdown('</div>', unsafe_allow_html=True)
     
-    # Dersler bittikten sonra boşluk
+    # Dersler bittikten sonra küçük boşluk
     st.markdown("<br>", unsafe_allow_html=True)
     
     # İlerleme butonu
@@ -358,7 +328,7 @@ else:
     st.success("🎉 **Tebrikler! Tüm soruları tamamladınız.**")
     
     st.markdown("""
-    <div style="background-color: #f0f8ff; padding: 12px; border-radius: 6px; border-left: 4px solid #1e3a8a; margin-bottom: 15px;">
+    <div style="background-color: #f0f8ff; padding: 10px; border-radius: 5px; border-left: 4px solid #1e3a8a; margin-bottom: 12px;">
     <h4 style="color: #1e3a8a; margin-top: 0; font-size: 16px;">📋 Yanıtlarınız Hazır</h4>
     <p style="font-size: 13px;">Aşağıdaki butona tıklayarak yanıtlarınızı sisteme gönderebilirsiniz.</p>
     </div>
@@ -391,7 +361,7 @@ else:
 # --- GENEL SAYFA AYAK BİLGİSİ ---
 st.markdown("---")
 st.markdown("""
-<div style="text-align: center; color: #666; font-size: 11px; margin-top: 15px;">
+<div style="text-align: center; color: #666; font-size: 11px; margin-top: 12px;">
 <p><strong>SBKY Bölümü Ders Değerlendirme Anketi</strong></p>
 </div>
 """, unsafe_allow_html=True)
