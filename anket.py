@@ -60,7 +60,7 @@ st.markdown("""
         font-size: 20px !important;
         font-weight: bold !important;
         color: var(--text-color) !important;
-        margin-top: 15px !important;
+        margin-top: 10px !important;
         margin-bottom: 5px !important;
         padding: 8px 12px !important;
         background-color: var(--background-color) !important;
@@ -68,64 +68,46 @@ st.markdown("""
         border-left: 4px solid #1e3a8a !important;
     }
     
-    /* SABİT SORU BAŞLIĞI - STICKY */
-    .soru-sticky-header {
+    /* STICKY SORU HEADER - FIXED */
+    .sticky-soru-header {
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
         right: 0 !important;
         background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%) !important;
         color: white !important;
-        padding: 15px !important;
-        z-index: 9999 !important;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+        padding: 15px 20px !important;
+        z-index: 10000 !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
         border-bottom: 3px solid #ffd700 !important;
+        height: auto !important;
     }
     
-    /* Soru başlığı içindeki metinler */
-    .soru-sticky-header h3 {
-        color: white !important;
-        margin: 0 !important;
-        font-size: 18px !important;
-        font-weight: bold !important;
+    /* Ana içeriği sticky header altına it */
+    .main .block-container {
+        padding-top: 130px !important;
+        padding-bottom: 40px !important;
     }
     
-    .soru-sticky-header .soru-numara {
-        font-size: 24px !important;
+    /* Soru bilgileri */
+    .soru-numara {
+        font-size: 22px !important;
         font-weight: bold !important;
         color: #ffd700 !important;
         margin-right: 10px !important;
+        display: inline-block !important;
     }
     
-    .soru-sticky-header .soru-metni {
+    .toplam-soru {
+        font-size: 16px !important;
+        color: rgba(255, 255, 255, 0.8) !important;
+    }
+    
+    .soru-metni {
         font-size: 16px !important;
         line-height: 1.4 !important;
-    }
-    
-    .soru-sticky-header .toplam-soru {
-        font-size: 14px !important;
-        color: #cbd5e1 !important;
-        margin-left: 5px !important;
-    }
-    
-    /* Ana içeriği sticky header'ın altına itmek için */
-    .main-content {
-        padding-top: 150px !important;
-    }
-    
-    @media (max-width: 768px) {
-        .soru-sticky-header {
-            padding: 12px !important;
-        }
-        .soru-sticky-header h3 {
-            font-size: 16px !important;
-        }
-        .soru-sticky-header .soru-metni {
-            font-size: 14px !important;
-        }
-        .main-content {
-            padding-top: 140px !important;
-        }
+        margin-top: 8px !important;
+        color: white !important;
     }
     
     /* Bilgi kutusu */
@@ -181,13 +163,6 @@ st.markdown("""
         font-size: 9px !important;
     }
     
-    /* Puan daireleri */
-    .puan-daireleri {
-        text-align: center;
-        margin-top: 5px;
-        margin-bottom: 15px;
-    }
-    
     /* Ders konteynır */
     .ders-konteynir {
         margin-bottom: 15px !important;
@@ -211,47 +186,91 @@ st.markdown("""
             border-left: 4px solid #4a90e2 !important;
         }
     }
+    
+    /* Mobil için düzenlemeler */
+    @media (max-width: 768px) {
+        .sticky-soru-header {
+            padding: 12px 15px !important;
+        }
+        .soru-numara {
+            font-size: 18px !important;
+        }
+        .soru-metni {
+            font-size: 14px !important;
+        }
+        .main .block-container {
+            padding-top: 120px !important;
+        }
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# --- JavaScript for scrolling and sticky header ---
+# --- JavaScript Kodu - EN BAŞTA ÇALIŞACAK ---
 st.markdown("""
 <script>
-    // Sayfa yüklendiğinde başa git ve sticky header'ı ayarla
-    function initPage() {
-        // Sayfanın başına git
+// Sayfa yüklendiğinde scroll yap ve sticky header'ı oluştur
+function initPage() {
+    // Sayfanın başına scroll yap
+    window.scrollTo(0, 0);
+    
+    // Sticky header'ı oluştur
+    createStickyHeader();
+    
+    // Streamlit render olduğunda tekrar kontrol et
+    setTimeout(function() {
         window.scrollTo(0, 0);
+        createStickyHeader();
+    }, 300);
+}
+
+// Sticky header oluşturma fonksiyonu
+function createStickyHeader() {
+    // Eğer sticky header zaten varsa çık
+    if (document.querySelector('.sticky-soru-header')) return;
+    
+    // Soru bilgilerini bul
+    const soruNumaraEl = document.querySelector('[data-soru-numara]');
+    const soruMetniEl = document.querySelector('[data-soru-metni]');
+    
+    if (soruNumaraEl && soruMetniEl) {
+        const soruNumara = soruNumaraEl.textContent;
+        const soruMetni = soruMetniEl.textContent;
         
-        // Ana içeriği sticky header'ın altına it
-        const mainContent = document.querySelector('.main .block-container');
-        if (mainContent) {
-            mainContent.classList.add('main-content');
-        }
+        // Sticky header'ı oluştur
+        const stickyHeader = document.createElement('div');
+        stickyHeader.className = 'sticky-soru-header';
+        stickyHeader.innerHTML = `
+            <div>
+                <span class="soru-numara">${soruNumara}</span>
+                <span class="toplam-soru">/ 13</span>
+                <div class="soru-metni">${soruMetni}</div>
+            </div>
+        `;
         
-        // Soru başlığını sticky header'a taşı
-        const soruBaslik = document.querySelector('.soru-baslik-container');
-        if (soruBaslik && !document.querySelector('.soru-sticky-header')) {
-            const stickyHeader = document.createElement('div');
-            stickyHeader.className = 'soru-sticky-header';
-            stickyHeader.innerHTML = soruBaslik.innerHTML;
-            document.body.prepend(stickyHeader);
-        }
+        // Header'ı sayfanın en üstüne ekle
+        document.body.prepend(stickyHeader);
     }
-    
-    // Sayfa yüklendiğinde çalıştır
-    window.addEventListener('load', initPage);
-    
-    // Streamlit render olduğunda çalıştır
-    document.addEventListener('streamlit:render', function() {
-        setTimeout(initPage, 100);
-    });
-    
-    // Her 100ms'de bir kontrol et (güvence için)
-    setInterval(function() {
-        if (!document.querySelector('.soru-sticky-header') && document.querySelector('.soru-baslik-container')) {
-            initPage();
-        }
-    }, 100);
+}
+
+// Sayfa yüklendiğinde çalıştır
+window.addEventListener('load', initPage);
+
+// Streamlit render olduğunda çalıştır
+document.addEventListener('streamlit:render', function() {
+    setTimeout(initPage, 100);
+});
+
+// Her 200ms'de bir kontrol et (güvence için)
+let checkInterval = setInterval(function() {
+    if (!document.querySelector('.sticky-soru-header')) {
+        initPage();
+    }
+}, 200);
+
+// 5 saniye sonra interval'i temizle
+setTimeout(function() {
+    clearInterval(checkInterval);
+}, 5000);
 </script>
 """, unsafe_allow_html=True)
 
@@ -329,23 +348,23 @@ elif 1 <= st.session_state.current_step <= 13:
     s_no = st.session_state.current_step - 1  # Soru indeksi (0-12)
     soru_metni = sorular[s_no]
     
+    # JavaScript'in bulması için data attribute'ları olan soru bilgileri
+    st.markdown(f"""
+    <div data-soru-numara="❓ Soru {s_no + 1}" style="display: none;"></div>
+    <div data-soru-metni="{soru_metni}" style="display: none;"></div>
+    """, unsafe_allow_html=True)
+    
     # Sadece seçili dersleri kullan
     aktif_dersler = st.session_state.selected_dersler
     
-    # STICKY SORU BAŞLIĞI - JavaScript tarafından alınacak
-    st.markdown(f'''
-    <div class="soru-baslik-container">
-        <h3>
-            <span class="soru-numara">❓ Soru {s_no + 1}</span>
-            <span class="toplam-soru">/ 13</span>
-        </h3>
-        <div class="soru-metni">{soru_metni}</div>
-    </div>
-    ''', unsafe_allow_html=True)
+    # Görünür soru bilgisi (sticky header oluşturulacak)
+    st.markdown("""
+    <div style="height: 10px;"></div>
+    """, unsafe_allow_html=True)
     
     # Ölçek açıklaması
     st.markdown("""
-    <div style="text-align: center; margin: 15px 0; font-size: 12px; color: #666; background: #f8f9fa; padding: 8px; border-radius: 5px;">
+    <div style="text-align: center; margin: 10px 0 20px 0; font-size: 12px; color: #666; background: #f8f9fa; padding: 10px; border-radius: 5px;">
     <strong>Değerlendirme Ölçeği:</strong> 1 = Kesinlikle Katılmıyorum | 5 = Kesinlikle Katılıyorum
     </div>
     """, unsafe_allow_html=True)
@@ -357,7 +376,7 @@ elif 1 <= st.session_state.current_step <= 13:
         # Her ders için bir container
         st.markdown(f'<div class="ders-konteynir">', unsafe_allow_html=True)
         
-        # Ders başlığı - daha büyük ve görünür
+        # Ders başlığı
         st.markdown(f'<div class="ders-baslik">{ders}</div>', unsafe_allow_html=True)
         
         # Slider etiketleri - kompakt iki satırlı
@@ -384,7 +403,7 @@ elif 1 <= st.session_state.current_step <= 13:
             label_visibility="collapsed"
         )
         
-        # Puan göstergesi - daha kompakt
+        # Puan göstergesi
         st.markdown(f"""
         <div style="text-align: center; margin-top: 10px;">
             <div style="font-size: 14px; font-weight: bold; margin-bottom: 5px; color: #1e3a8a;">
@@ -405,8 +424,8 @@ elif 1 <= st.session_state.current_step <= 13:
         
         st.markdown('</div>', unsafe_allow_html=True)
     
-    # Dersler bittikten sonra boşluk ve buton
-    st.markdown("<br>", unsafe_allow_html=True)
+    # Dersler bittikten sonra boşluk
+    st.markdown("<br><br>", unsafe_allow_html=True)
     
     # Buton bölümü
     col1, col2, col3 = st.columns([1, 2, 1])
@@ -416,21 +435,40 @@ elif 1 <= st.session_state.current_step <= 13:
         else:  # Son soru için
             button_label = "✅ Tüm Soruları Tamamla"
         
+        # Butona ek JavaScript - sayfa başına scroll için
+        button_js = """
+        <script>
+        // Buton tıklanmadan önce scroll yap
+        document.querySelectorAll('button').forEach(button => {
+            if (button.textContent.includes('Sonraki Soru') || button.textContent.includes('Tüm Soruları Tamamla')) {
+                button.addEventListener('click', function() {
+                    window.scrollTo(0, 0);
+                });
+            }
+        });
+        </script>
+        """
+        
         if st.button(button_label, use_container_width=True, type="primary"):
-            st.session_state.all_data.extend(current_responses)
-            st.session_state.current_step += 1
-            # Scroll için JavaScript - Streamlit'in render olmasını bekle
+            # Butona basıldığında scroll yap
             st.markdown("""
             <script>
-                // Butona basıldığında başa scroll yap
-                window.scrollTo(0, 0);
-                
-                // Yeni sayfa render olduğunda tekrar başa git
-                setTimeout(function() {
-                    window.scrollTo(0, 0);
-                }, 100);
+            window.scrollTo(0, 0);
             </script>
             """, unsafe_allow_html=True)
+            
+            st.session_state.all_data.extend(current_responses)
+            st.session_state.current_step += 1
+            
+            # Ek scroll güvencesi
+            st.markdown("""
+            <script>
+            setTimeout(function() {
+                window.scrollTo(0, 0);
+            }, 100);
+            </script>
+            """, unsafe_allow_html=True)
+            
             st.rerun()
 
 # --- GÖNDERME EKRANI ---
@@ -481,4 +519,16 @@ st.markdown("""
 <p><strong>SBKY Bölümü Ders Değerlendirme Anketi</strong></p>
 <p>Bu anket, bölümümüzün eğitim kalitesini artırmak ve akreditasyon sürecine katkı sağlamak amacıyla düzenlenmiştir.</p>
 </div>
+""", unsafe_allow_html=True)
+
+# En son güvence scroll kodu
+st.markdown("""
+<script>
+// Son kontrol - sayfa tamamen yüklendikten 1 saniye sonra
+setTimeout(function() {
+    if (window.scrollY > 50) {
+        window.scrollTo(0, 0);
+    }
+}, 1000);
+</script>
 """, unsafe_allow_html=True)
