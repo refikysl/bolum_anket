@@ -46,69 +46,135 @@ st.markdown("""
     /* Rengarenk slider için özel stil */
     .stSlider > div > div > div > div {
         background: linear-gradient(90deg, #ff4b4b 0%, #ffa726 25%, #ffeb3b 50%, #4caf50 75%, #2e7d32 100%);
+        height: 10px;
     }
     
-    /* Slider etiketleri için stil */
-    .stSlider label {
-        font-size: 14px !important;
+    /* Slider handle */
+    .stSlider > div > div > div > div > div {
+        height: 24px;
+        width: 24px;
     }
     
-    /* Ders başlıkları */
+    /* Ders başlıkları - tüm ekranlar için optimize */
     .ders-baslik {
-        font-size: 18px;
-        font-weight: bold;
-        color: #1e3a8a;
-        margin-top: 20px;
-        margin-bottom: 10px;
+        font-size: 20px !important;
+        font-weight: bold !important;
+        color: var(--text-color) !important;
+        margin-top: 15px !important;
+        margin-bottom: 5px !important;
+        padding: 8px 12px !important;
+        background-color: var(--background-color) !important;
+        border-radius: 8px !important;
+        border-left: 4px solid #1e3a8a !important;
     }
     
     /* Soru başlığı */
     .soru-baslik {
-        font-size: 20px;
-        font-weight: bold;
-        color: #1e3a8a;
-        margin-bottom: 15px;
+        font-size: 22px !important;
+        font-weight: bold !important;
+        color: #1e3a8a !important;
+        margin-bottom: 15px !important;
+        padding-top: 10px !important;
     }
     
-    /* Bilgi kutusu - daha belirgin yapıyoruz */
+    /* Bilgi kutusu */
     .bilgi-kutusu {
-        background-color: #f0f8ff;
-        padding: 20px;
-        border-radius: 10px;
-        border-left: 5px solid #1e3a8a;
-        margin-bottom: 25px;
+        background-color: #f0f8ff !important;
+        padding: 20px !important;
+        border-radius: 10px !important;
+        border-left: 5px solid #1e3a8a !important;
+        margin-bottom: 25px !important;
         color: #000000 !important;
     }
     
     .bilgi-kutusu h4 {
         color: #1e3a8a !important;
-        margin-top: 0;
+        margin-top: 0 !important;
     }
     
     .bilgi-kutusu p, .bilgi-kutusu li {
         color: #000000 !important;
+        font-size: 16px !important;
+    }
+    
+    /* Slider etiketleri - kompakt ve iki satır */
+    .slider-etiket-konteynir {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-top: 5px;
+        margin-bottom: 10px;
+        width: 100%;
+    }
+    
+    .slider-etiket-sol {
+        text-align: left;
+        font-size: 10px !important;
+        line-height: 1.2;
+        max-width: 45%;
+    }
+    
+    .slider-etiket-sag {
+        text-align: right;
+        font-size: 10px !important;
+        line-height: 1.2;
+        max-width: 45%;
+    }
+    
+    .etiket-satir {
+        display: block;
+    }
+    
+    .etiket-buyuk {
+        font-size: 14px !important;
+        font-weight: bold;
+    }
+    
+    .etiket-kucuk {
+        font-size: 9px !important;
     }
     
     /* Puan daireleri */
     .puan-daireleri {
         text-align: center;
-        margin-top: -5px;
+        margin-top: 5px;
         margin-bottom: 15px;
+    }
+    
+    /* Ders konteynır */
+    .ders-konteynir {
+        margin-bottom: 15px !important;
+        padding-bottom: 10px !important;
+        border-bottom: 1px solid #e0e0e0;
     }
     
     /* Slider konteynır */
     .slider-konteynir {
         margin-top: 5px;
-        margin-bottom: 10px;
+        margin-bottom: 5px;
     }
     
-    /* Slider etiket konteynır */
-    .slider-etiketler {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 5px;
-        font-size: 12px;
-        color: #666;
+    /* Tema uyumlu renk değişkenleri */
+    :root {
+        --text-color: #000000;
+        --background-color: #ffffff;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --text-color: #ffffff;
+            --background-color: #0e1117;
+        }
+        .ders-baslik {
+            background-color: #1e1e1e !important;
+            border-left: 4px solid #4a90e2 !important;
+        }
+    }
+    
+    /* Sayfa yüksekliği kontrolü */
+    .main .block-container {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -180,6 +246,12 @@ if st.session_state.current_step == 0:
         with col2:
             if st.button("✅ Ders Seçimini Tamamla ve Sorulara Başla", use_container_width=True, type="primary"):
                 st.session_state.current_step = 1
+                # Sayfanın başına gitmek için JavaScript
+                st.markdown("""
+                <script>
+                    window.scrollTo(0, 0);
+                </script>
+                """, unsafe_allow_html=True)
                 st.rerun()
 
 # --- ANKET SORULARI (1-13) ---
@@ -187,81 +259,89 @@ elif 1 <= st.session_state.current_step <= 13:
     s_no = st.session_state.current_step - 1  # Soru indeksi (0-12)
     soru_metni = sorular[s_no]
     
+    # JavaScript ile sayfanın başına otomatik scroll
+    st.markdown("""
+    <script>
+        window.scrollTo(0, 0);
+    </script>
+    """, unsafe_allow_html=True)
+    
     # Sadece seçili dersleri kullan
     aktif_dersler = st.session_state.selected_dersler
     
-    # Soru başlığı
-    st.markdown(f"<h3 class='soru-baslik'>❓ Soru {s_no + 1}</h3>", unsafe_allow_html=True)
-    st.markdown(f"<h4>{soru_metni}</h4>", unsafe_allow_html=True)
+    # Soru başlığı - sayfanın en üstünde
+    st.markdown(f"<div class='soru-baslik'>❓ Soru {s_no + 1} / 13</div>", unsafe_allow_html=True)
+    st.markdown(f"<h3>{soru_metni}</h3>", unsafe_allow_html=True)
     
     st.markdown("---")
     
+    # Ölçek açıklaması - kompakt
+    st.markdown("""
+    <div style="text-align: center; margin-bottom: 15px; font-size: 12px; color: #666;">
+    <strong>Değerlendirme Ölçeği:</strong> 1 = Kesinlikle Katılmıyorum | 5 = Kesinlikle Katılıyorum
+    </div>
+    """, unsafe_allow_html=True)
+    
     current_responses = []
     
-    # Mobil uyumluluk için dersleri alt alta gösteriyoruz
+    # Dersleri alt alta gösteriyoruz - daha kompakt
     for ders in aktif_dersler:
         # Her ders için bir container
-        with st.container():
-            st.markdown(f"<div class='ders-baslik'>{ders}</div>", unsafe_allow_html=True)
-            
-            # Slider üzerinde etiketleri göstermek için custom HTML
-            col1, col2, col3 = st.columns([1, 3, 1])
-            with col2:
-                st.markdown('<div class="slider-etiketler">', unsafe_allow_html=True)
-                st.markdown('<div style="text-align: left;">Kesinlikle Katılmıyorum</div>', unsafe_allow_html=True)
-                st.markdown('<div style="text-align: right;">Kesinlikle Katılıyorum</div>', unsafe_allow_html=True)
-                st.markdown('</div>', unsafe_allow_html=True)
-            
-            # Puanlama slider'ı (1-5) - renkli versiyon
-            col_slider1, col_slider2, col_slider3 = st.columns([1, 3, 1])
-            with col_slider2:
-                # Slider'ı ortalayarak göster
-                st.markdown('<div class="slider-konteynir">', unsafe_allow_html=True)
-                puan = st.slider(
-                    "",
-                    min_value=1,
-                    max_value=5,
-                    value=3,
-                    key=f"step_{s_no}_{ders}",
-                    label_visibility="collapsed"
-                )
-                st.markdown('</div>', unsafe_allow_html=True)
-            
-            # Puan seviyesini görsel olarak göster
-            col_puan1, col_puan2, col_puan3 = st.columns([1, 3, 1])
-            with col_puan2:
-                # Renkli dairelerle puan gösterimi
-                circles_html = ""
-                for i in range(1, 6):
-                    if i <= puan:
-                        if i == 1:
-                            circles_html += f'<span style="color: #ff4b4b; font-size: 24px;">●</span> '
-                        elif i == 2:
-                            circles_html += f'<span style="color: #ffa726; font-size: 24px;">●</span> '
-                        elif i == 3:
-                            circles_html += f'<span style="color: #ffeb3b; font-size: 24px;">●</span> '
-                        elif i == 4:
-                            circles_html += f'<span style="color: #4caf50; font-size: 24px;">●</span> '
-                        elif i == 5:
-                            circles_html += f'<span style="color: #2e7d32; font-size: 24px;">●</span> '
-                    else:
-                        circles_html += f'<span style="color: #cccccc; font-size: 24px;">○</span> '
-                
-                st.markdown(f"""
-                <div class="puan-daireleri">
-                    <div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;">Seçilen Puan: {puan}</div>
-                    <div>{circles_html}</div>
+        st.markdown(f'<div class="ders-konteynir">', unsafe_allow_html=True)
+        
+        # Ders başlığı - daha büyük ve görünür
+        st.markdown(f'<div class="ders-baslik">{ders}</div>', unsafe_allow_html=True)
+        
+        # Slider etiketleri - kompakt iki satırlı
+        st.markdown("""
+        <div class="slider-etiket-konteynir">
+            <div class="slider-etiket-sol">
+                <span class="etiket-buyuk">1</span><br>
+                <span class="etiket-kucuk">Kesinlikle<br>Katılmıyorum</span>
+            </div>
+            <div class="slider-etiket-sag">
+                <span class="etiket-buyuk">5</span><br>
+                <span class="etiket-kucuk">Kesinlikle<br>Katılıyorum</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Puanlama slider'ı (1-5)
+        col_slider1, col_slider2, col_slider3 = st.columns([1, 3, 1])
+        with col_slider2:
+            puan = st.slider(
+                "",
+                min_value=1,
+                max_value=5,
+                value=3,
+                key=f"step_{s_no}_{ders}",
+                label_visibility="collapsed"
+            )
+        
+        # Puan göstergesi - daha kompakt
+        col_gosterge1, col_gosterge2, col_gosterge3 = st.columns([1, 2, 1])
+        with col_gosterge2:
+            # Basit puan göstergesi
+            st.markdown(f"""
+            <div style="text-align: center; margin-top: 5px;">
+                <div style="font-size: 14px; font-weight: bold; margin-bottom: 3px;">Seçilen Puan: <span style="font-size: 18px;">{puan}</span></div>
+                <div style="font-size: 20px; letter-spacing: 2px;">
+                    {"●" * puan}{"○" * (5 - puan)}
                 </div>
-                """, unsafe_allow_html=True)
-            
-            current_responses.append({
-                "Sinif": st.session_state.selected_sinif, 
-                "Ders": ders, 
-                "Soru_No": s_no + 1, 
-                "Puan": puan  # Direkt sayısal değer
-            })
-            
-            st.markdown("---")
+            </div>
+            """, unsafe_allow_html=True)
+        
+        current_responses.append({
+            "Sinif": st.session_state.selected_sinif, 
+            "Ders": ders, 
+            "Soru_No": s_no + 1, 
+            "Puan": puan
+        })
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Dersler bittikten sonra boşluk ve buton
+    st.markdown("<br>", unsafe_allow_html=True)
     
     # Buton bölümü
     col1, col2, col3 = st.columns([1, 2, 1])
@@ -278,6 +358,13 @@ elif 1 <= st.session_state.current_step <= 13:
 
 # --- GÖNDERME EKRANI ---
 else:
+    # JavaScript ile sayfanın başına otomatik scroll
+    st.markdown("""
+    <script>
+        window.scrollTo(0, 0);
+    </script>
+    """, unsafe_allow_html=True)
+    
     st.success("🎉 **Tebrikler! Tüm soruları tamamladınız.**")
     
     st.markdown("""
