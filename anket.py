@@ -48,6 +48,11 @@ st.markdown("""
         background: linear-gradient(90deg, #ff4b4b 0%, #ffa726 25%, #ffeb3b 50%, #4caf50 75%, #2e7d32 100%);
     }
     
+    /* Slider etiketleri için stil */
+    .stSlider label {
+        font-size: 14px !important;
+    }
+    
     /* Ders başlıkları */
     .ders-baslik {
         font-size: 18px;
@@ -65,13 +70,45 @@ st.markdown("""
         margin-bottom: 15px;
     }
     
-    /* Bilgi kutusu */
+    /* Bilgi kutusu - daha belirgin yapıyoruz */
     .bilgi-kutusu {
         background-color: #f0f8ff;
-        padding: 15px;
+        padding: 20px;
         border-radius: 10px;
         border-left: 5px solid #1e3a8a;
-        margin-bottom: 20px;
+        margin-bottom: 25px;
+        color: #000000 !important;
+    }
+    
+    .bilgi-kutusu h4 {
+        color: #1e3a8a !important;
+        margin-top: 0;
+    }
+    
+    .bilgi-kutusu p, .bilgi-kutusu li {
+        color: #000000 !important;
+    }
+    
+    /* Puan daireleri */
+    .puan-daireleri {
+        text-align: center;
+        margin-top: -5px;
+        margin-bottom: 15px;
+    }
+    
+    /* Slider konteynır */
+    .slider-konteynir {
+        margin-top: 5px;
+        margin-bottom: 10px;
+    }
+    
+    /* Slider etiket konteynır */
+    .slider-etiketler {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 5px;
+        font-size: 12px;
+        color: #666;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -159,17 +196,6 @@ elif 1 <= st.session_state.current_step <= 13:
     
     st.markdown("---")
     
-    # Değerlendirme açıklaması
-    col1, col2, col3 = st.columns([1, 3, 1])
-    with col2:
-        st.markdown("""
-        <div style="text-align: center; background-color: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
-        <strong>Değerlendirme ölçeği:</strong><br>
-        <span style="color: #ff4b4b;">1 = Kesinlikle Katılmıyorum</span> | 
-        <span style="color: #2e7d32;">5 = Kesinlikle Katılıyorum</span>
-        </div>
-        """, unsafe_allow_html=True)
-    
     current_responses = []
     
     # Mobil uyumluluk için dersleri alt alta gösteriyoruz
@@ -178,18 +204,31 @@ elif 1 <= st.session_state.current_step <= 13:
         with st.container():
             st.markdown(f"<div class='ders-baslik'>{ders}</div>", unsafe_allow_html=True)
             
+            # Slider üzerinde etiketleri göstermek için custom HTML
+            col1, col2, col3 = st.columns([1, 3, 1])
+            with col2:
+                st.markdown('<div class="slider-etiketler">', unsafe_allow_html=True)
+                st.markdown('<div style="text-align: left;">Kesinlikle Katılmıyorum</div>', unsafe_allow_html=True)
+                st.markdown('<div style="text-align: right;">Kesinlikle Katılıyorum</div>', unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
+            
             # Puanlama slider'ı (1-5) - renkli versiyon
-            puan = st.slider(
-                "",
-                min_value=1,
-                max_value=5,
-                value=3,
-                key=f"step_{s_no}_{ders}",
-                label_visibility="collapsed"
-            )
+            col_slider1, col_slider2, col_slider3 = st.columns([1, 3, 1])
+            with col_slider2:
+                # Slider'ı ortalayarak göster
+                st.markdown('<div class="slider-konteynir">', unsafe_allow_html=True)
+                puan = st.slider(
+                    "",
+                    min_value=1,
+                    max_value=5,
+                    value=3,
+                    key=f"step_{s_no}_{ders}",
+                    label_visibility="collapsed"
+                )
+                st.markdown('</div>', unsafe_allow_html=True)
             
             # Puan seviyesini görsel olarak göster
-            col_puan1, col_puan2, col_puan3 = st.columns([1, 2, 1])
+            col_puan1, col_puan2, col_puan3 = st.columns([1, 3, 1])
             with col_puan2:
                 # Renkli dairelerle puan gösterimi
                 circles_html = ""
@@ -209,9 +248,9 @@ elif 1 <= st.session_state.current_step <= 13:
                         circles_html += f'<span style="color: #cccccc; font-size: 24px;">○</span> '
                 
                 st.markdown(f"""
-                <div style="text-align: center; margin-top: -10px; margin-bottom: 10px;">
-                    <div style="font-size: 16px; font-weight: bold;">Seçilen Puan: {puan}</div>
-                    <div style="margin-top: 5px;">{circles_html}</div>
+                <div class="puan-daireleri">
+                    <div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;">Seçilen Puan: {puan}</div>
+                    <div>{circles_html}</div>
                 </div>
                 """, unsafe_allow_html=True)
             
