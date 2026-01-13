@@ -95,14 +95,17 @@ st.markdown("""
         border-bottom: 1px solid #f0f0f0;
     }
     
-    /* DERS ADI - ÜSTTE, OKUNAKLI */
+    /* DERS ADI - BÜYÜK, BEYAZ, OKUNAKLI */
     .ders-adi {
-        font-size: 16px !important;
-        font-weight: 600 !important;
-        color: #1e3a8a !important;
+        font-size: 18px !important;
+        font-weight: 700 !important;
+        color: white !important;
         margin: 3px 0 1px 0 !important;
-        padding: 0 5px !important;
+        padding: 4px 5px !important;
         display: block;
+        background-color: rgba(30, 58, 138, 0.9);
+        border-radius: 4px;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
     }
     
     /* SLİDER - TEK PARÇA, İNCE */
@@ -139,8 +142,6 @@ st.markdown("""
         margin: 0 !important;
     }
     
-    /* PUAN GÖSTERGESİ KALDIRILDI - YOK */
-    
     /* Buton */
     .stButton > button {
         margin: 8px 0 5px 0 !important;
@@ -164,7 +165,8 @@ st.markdown("""
         }
         
         .ders-adi {
-            font-size: 15px !important;
+            font-size: 16px !important;
+            padding: 3px 4px !important;
         }
         
         .olcek-aciklama {
@@ -181,33 +183,37 @@ st.markdown("""
     /* Çok küçük ekranlar için */
     @media (max-width: 480px) {
         .ders-adi {
-            font-size: 14px !important;
+            font-size: 15px !important;
         }
     }
 </style>
 """, unsafe_allow_html=True)
 
-# --- ANA SAYFA ---
-st.title("🏛️ SBKY Bölümü Ders Değerlendirme Anketi")
+# --- ANA SAYFA - SADECE SORU 0'DA GÖSTER ---
+if st.session_state.current_step == 0:
+    st.title("🏛️ SBKY Bölümü Ders Değerlendirme Anketi")
 
 # --- SORU 0: SINIF VE DERS SEÇİMİ ---
 if st.session_state.current_step == 0:
     st.markdown("""
-    <div style="background-color: #f0f8ff; padding: 10px; border-radius: 5px; border-left: 4px solid #1e3a8a; margin-bottom: 12px; color: #000000;">
-    <h4 style="color: #1e3a8a; margin-top: 0; font-size: 16px;">📝 Değerli Öğrencimiz,</h4>
-    <p style="font-size: 13px; margin-bottom: 6px;">Bölümümüzün eğitim kalitesini artırmak için düzenlenen bu ankette, lütfen derslerinizi değerlendiriniz.</p>
-    <p style="font-size: 13px; margin-bottom: 6px;"><strong>Adımlar:</strong></p>
-    <ol style="font-size: 13px; margin-bottom: 6px;">
-        <li>Sınıfınızı seçin</li>
-        <li>Aldığınız dersleri işaretleyin</li>
-        <li>13 soruyu yanıtlayın (her soru için derslere 1-5 arası puan verin)</li>
-    </ol>
-    <p style="font-size: 12px; margin-bottom: 0;"><em>Anket tamamen anonimdir. Teşekkür ederiz.</em></p>
+    <div style="background-color: #f0f8ff; padding: 20px; border-radius: 10px; border-left: 5px solid #1e3a8a; margin-bottom: 25px; color: #000000;">
+    <h4 style="color: #1e3a8a; margin-top: 0;">📝 Değerli Öğrencimiz,</h4>
+    <p>Bölümümüzün eğitim kalitesini artırmak ve uluslararası akreditasyon standartlarına uyumunu değerlendirmek amacıyla düzenlenen bu anket, ders içerikleri ve öğretim süreçlerinin geliştirilmesine ışık tutacaktır.</p>
+    <p>Öncelikle döneminizden aldığınız dersleri seçmeniz gerekmektedir. Seçiminize bağlı olarak yalnızca ilgili dersler değerlendirmenize sunulacaktır. Herhangi bir sebeple alamadığınız ders varsa başındaki onay işaretini kaldırarak dersi değerlendirme dışı bırakınız.</p>
+    <p>Anket 13 sorudan oluşmaktadır. Her bir soru aslında derse ya da dersi veren öğretim üyesine yönelik bir ifadedir. Altında aldığınız derslerin her biri için yukarıda yer alan ifadeye katılıp katılmadığınızı belirtebileceğiniz bir değerlendirme barı açılacaktır.</p>
+    <p>Ankette yer alan ifadelere dair değerlendirmenizi, her bir ifadenin altında bulunan 1 (Kesinlikle Katılmıyorum) ile 5 (Kesinlikle Katılıyorum) arasında değerlendirme barını sağa ve sola hareket ettirerek belirtebilirsiniz. Barı, görüşünüzü en iyi yansıtan düzeye kaydırarak puanlamanızı tamamlayınız.</p>
+    <ul>
+        <li>Katılımcılardan herhangi bir kimlik bilgisi ya da tanımlayıcı bilgi istenmemektedir.</li>
+        <li>Vereceğiniz yanıtlar yalnızca akademik iyileştirme çalışmalarında kullanılacaktır.</li>
+        <li>Eğitim kalitemize sağladığınız değerli katkılar için teşekkür ederiz.</li>
+    </ul>
     </div>
     """, unsafe_allow_html=True)
     
+    st.markdown("---")
+    
     # Sınıf seçimi
-    st.markdown("<h4 style='font-size: 16px; margin-bottom: 6px;'>📋 Sınıfınızı Seçiniz:</h4>", unsafe_allow_html=True)
+    st.markdown("<h4>📋 Lütfen sınıfınızı seçiniz:</h4>", unsafe_allow_html=True)
     sinif = st.selectbox(
         "",
         list(ders_programi.keys()),
@@ -223,24 +229,21 @@ if st.session_state.current_step == 0:
     st.markdown("---")
     
     # Ders seçimi
-    st.markdown(f"<h4 style='font-size: 16px; margin-bottom: 6px;'>📚 {sinif} Dersleriniz:</h4>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 13px; margin-bottom: 6px;'><strong>Bu yarıyılda aldığınız dersleri işaretleyiniz.</strong></p>", unsafe_allow_html=True)
+    st.markdown(f"<h4>📚 {sinif} için derslerinizi seçiniz:</h4>", unsafe_allow_html=True)
+    st.markdown("**Lütfen bu yarıyılda almakta olduğunuz dersleri işaretleyiniz.** Almadığınız derslerin işaretini kaldırınız.")
     
     aktif_dersler = ders_programi[sinif]
     selected_dersler = []
     
-    # Tüm dersleri checkbox'larla göster - kompakt
-    cols = st.columns(2)
-    for idx, ders in enumerate(aktif_dersler):
-        col_idx = idx % 2
-        with cols[col_idx]:
-            # Varsayılan olarak tüm dersler seçili
-            default_value = True
-            if st.session_state.selected_dersler and ders not in st.session_state.selected_dersler:
-                default_value = False
-                
-            if st.checkbox(ders, value=default_value, key=f"ders_checkbox_{ders}"):
-                selected_dersler.append(ders)
+    # Tüm dersleri checkbox'larla göster
+    for ders in aktif_dersler:
+        # Varsayılan olarak tüm dersler seçili
+        default_value = True
+        if st.session_state.selected_dersler and ders not in st.session_state.selected_dersler:
+            default_value = False
+            
+        if st.checkbox(ders, value=default_value, key=f"ders_checkbox_{ders}"):
+            selected_dersler.append(ders)
     
     st.session_state.selected_dersler = selected_dersler
     
@@ -250,9 +253,11 @@ if st.session_state.current_step == 0:
     if len(selected_dersler) == 0:
         st.error("⚠️ **Lütfen en az bir ders seçiniz!**")
     else:
-        if st.button("✅ Ders Seçimini Tamamla ve Sorulara Başla", use_container_width=True, type="primary"):
-            st.session_state.current_step = 1
-            st.rerun()
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button("✅ Ders Seçimini Tamamla ve Sorulara Başla", use_container_width=True, type="primary"):
+                st.session_state.current_step = 1
+                st.rerun()
 
 # --- ANKET SORULARI (1-13) ---
 elif 1 <= st.session_state.current_step <= 13:
@@ -284,11 +289,10 @@ elif 1 <= st.session_state.current_step <= 13:
         # Ders bloğu
         st.markdown(f'<div class="ders-blok" id="ders_{idx}">', unsafe_allow_html=True)
         
-        # Ders adı - ÜSTTE
+        # Ders adı - BÜYÜK, BEYAZ, OKUNAKLI
         st.markdown(f'<div class="ders-adi">{idx+1}. {ders}</div>', unsafe_allow_html=True)
         
         # Puanlama slider'ı (1-5) - ALTTA, TEK PARÇA
-        # NOT: value parametresi slider'ın başlangıç değeri, ama kullanıcı değiştirebilir
         puan = st.slider(
             "",  # Boş label
             min_value=1,
@@ -297,7 +301,6 @@ elif 1 <= st.session_state.current_step <= 13:
             key=f"step_{s_no}_{ders}",
             label_visibility="collapsed"
         )
-        # NOT: Slider'ın seçili değerini göstermiyoruz, sadece slider kendisi gösteriyor
         
         current_responses.append({
             "Sinif": st.session_state.selected_sinif, 
@@ -328,40 +331,47 @@ else:
     st.success("🎉 **Tebrikler! Tüm soruları tamamladınız.**")
     
     st.markdown("""
-    <div style="background-color: #f0f8ff; padding: 10px; border-radius: 5px; border-left: 4px solid #1e3a8a; margin-bottom: 12px;">
-    <h4 style="color: #1e3a8a; margin-top: 0; font-size: 16px;">📋 Yanıtlarınız Hazır</h4>
-    <p style="font-size: 13px;">Aşağıdaki butona tıklayarak yanıtlarınızı sisteme gönderebilirsiniz.</p>
+    <div style="background-color: #f0f8ff; padding: 20px; border-radius: 10px; border-left: 5px solid #1e3a8a; margin-bottom: 25px;">
+    <h4 style="color: #1e3a8a; margin-top: 0;">📋 Yanıtlarınız Hazır</h4>
+    <p>Aşağıdaki butona tıklayarak yanıtlarınızı sisteme gönderebilirsiniz.</p>
+    <p><strong>Not:</strong> Göndermeden önce, tüm soruları yanıtladığınızdan emin olunuz.</p>
     </div>
     """, unsafe_allow_html=True)
     
-    if st.button("🚀 VERİLERİ GÖNDER", use_container_width=True, type="primary"):
-        script_url = "https://script.google.com/macros/s/AKfycbwjMMwluGWitBAfCL5gQlNnPH7wzp_9Ailz1yS9bHhfch5U5wRGQvjXv_khBU5aEMX_/exec" 
-        
-        with st.spinner('Verileriniz kaydediliyor...'):
-            try:
-                response = requests.post(script_url, json=st.session_state.all_data)
-                if response.text == "Başarılı":
-                    st.balloons()
-                    st.success("✅ **Tüm verileriniz başarıyla kaydedildi!**")
-                    st.info("**Anketi tamamladığınız için teşekkür ederiz.**")
-                    
-                    # Otomatik sıfırlama
-                    st.session_state.current_step = 0
-                    st.session_state.all_data = []
-                    st.session_state.selected_dersler = []
-                    st.session_state.selected_sinif = None
-                    st.rerun()
-                else:
-                    st.error(f"❌ **Hata oluştu:** {response.text}")
-                    st.info("Lütfen sayfayı yenileyip tekrar deneyiniz.")
-            except Exception as e:
-                st.error(f"❌ **Bağlantı hatası:** {e}")
-                st.info("Lütfen internet bağlantınızı kontrol edip tekrar deneyiniz.")
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if st.button("🚀 VERİLERİ GÖNDER", use_container_width=True, type="primary"):
+            script_url = "https://script.google.com/macros/s/AKfycbwjMMwluGWitBAfCL5gQlNnPH7wzp_9Ailz1yS9bHhfch5U5wRGQvjXv_khBU5aEMX_/exec" 
+            
+            with st.spinner('Verileriniz kaydediliyor... Lütfen bekleyiniz.'):
+                try:
+                    response = requests.post(script_url, json=st.session_state.all_data)
+                    if response.text == "Başarılı":
+                        st.balloons()
+                        st.success("✅ **Tüm verileriniz başarıyla kaydedildi!**")
+                        st.info("""
+                        **Anketi tamamladığınız için teşekkür ederiz.**  
+                        Eğitim kalitemizi artırmamıza yardımcı olduğunuz için minnettarız.
+                        """)
+                        
+                        # Otomatik sıfırlama
+                        st.session_state.current_step = 0
+                        st.session_state.all_data = []
+                        st.session_state.selected_dersler = []
+                        st.session_state.selected_sinif = None
+                        st.rerun()
+                    else:
+                        st.error(f"❌ **Hata oluştu:** {response.text}")
+                        st.info("Lütfen sayfayı yenileyip tekrar deneyiniz.")
+                except Exception as e:
+                    st.error(f"❌ **Bağlantı hatası:** {e}")
+                    st.info("Lütfen internet bağlantınızı kontrol edip tekrar deneyiniz.")
 
 # --- GENEL SAYFA AYAK BİLGİSİ ---
 st.markdown("---")
 st.markdown("""
-<div style="text-align: center; color: #666; font-size: 11px; margin-top: 12px;">
+<div style="text-align: center; color: #666; font-size: 12px; margin-top: 20px;">
 <p><strong>SBKY Bölümü Ders Değerlendirme Anketi</strong></p>
+<p>Bu anket, bölümümüzün eğitim kalitesini artırmak ve akreditasyon sürecine katkı sağlamak amacıyla düzenlenmiştir.</p>
 </div>
 """, unsafe_allow_html=True)
