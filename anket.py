@@ -68,13 +68,64 @@ st.markdown("""
         border-left: 4px solid #1e3a8a !important;
     }
     
-    /* Soru başlığı */
-    .soru-baslik {
-        font-size: 22px !important;
+    /* SABİT SORU BAŞLIĞI - STICKY */
+    .soru-sticky-header {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%) !important;
+        color: white !important;
+        padding: 15px !important;
+        z-index: 9999 !important;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+        border-bottom: 3px solid #ffd700 !important;
+    }
+    
+    /* Soru başlığı içindeki metinler */
+    .soru-sticky-header h3 {
+        color: white !important;
+        margin: 0 !important;
+        font-size: 18px !important;
         font-weight: bold !important;
-        color: #1e3a8a !important;
-        margin-bottom: 15px !important;
-        padding-top: 10px !important;
+    }
+    
+    .soru-sticky-header .soru-numara {
+        font-size: 24px !important;
+        font-weight: bold !important;
+        color: #ffd700 !important;
+        margin-right: 10px !important;
+    }
+    
+    .soru-sticky-header .soru-metni {
+        font-size: 16px !important;
+        line-height: 1.4 !important;
+    }
+    
+    .soru-sticky-header .toplam-soru {
+        font-size: 14px !important;
+        color: #cbd5e1 !important;
+        margin-left: 5px !important;
+    }
+    
+    /* Ana içeriği sticky header'ın altına itmek için */
+    .main-content {
+        padding-top: 150px !important;
+    }
+    
+    @media (max-width: 768px) {
+        .soru-sticky-header {
+            padding: 12px !important;
+        }
+        .soru-sticky-header h3 {
+            font-size: 16px !important;
+        }
+        .soru-sticky-header .soru-metni {
+            font-size: 14px !important;
+        }
+        .main-content {
+            padding-top: 140px !important;
+        }
     }
     
     /* Bilgi kutusu */
@@ -121,10 +172,6 @@ st.markdown("""
         max-width: 45%;
     }
     
-    .etiket-satir {
-        display: block;
-    }
-    
     .etiket-buyuk {
         font-size: 14px !important;
         font-weight: bold;
@@ -148,12 +195,6 @@ st.markdown("""
         border-bottom: 1px solid #e0e0e0;
     }
     
-    /* Slider konteynır */
-    .slider-konteynir {
-        margin-top: 5px;
-        margin-bottom: 5px;
-    }
-    
     /* Tema uyumlu renk değişkenleri */
     :root {
         --text-color: #000000;
@@ -170,58 +211,49 @@ st.markdown("""
             border-left: 4px solid #4a90e2 !important;
         }
     }
-    
-    /* Sayfa yüksekliği kontrolü */
-    .main .block-container {
-        padding-top: 1rem;
-        padding-bottom: 1rem;
-    }
-    
-    /* Sayfa başına sabitlenen başlık */
-    .soru-ust-bolum {
-        position: sticky;
-        top: 0;
-        background-color: white;
-        z-index: 100;
-        padding-top: 10px;
-        padding-bottom: 10px;
-        border-bottom: 2px solid #1e3a8a;
-        margin-bottom: 15px;
-    }
-    
-    @media (prefers-color-scheme: dark) {
-        .soru-ust-bolum {
-            background-color: #0e1117;
-        }
-    }
 </style>
 """, unsafe_allow_html=True)
 
-# --- JavaScript for scrolling to top ---
-# Bu kodu EN BAŞTA ekliyoruz ki sayfa yüklendiğinde çalışsın
-scroll_js = """
+# --- JavaScript for scrolling and sticky header ---
+st.markdown("""
 <script>
-    // Sayfa yüklendiğinde başa git
-    window.addEventListener('load', function() {
+    // Sayfa yüklendiğinde başa git ve sticky header'ı ayarla
+    function initPage() {
+        // Sayfanın başına git
         window.scrollTo(0, 0);
-    });
+        
+        // Ana içeriği sticky header'ın altına it
+        const mainContent = document.querySelector('.main .block-container');
+        if (mainContent) {
+            mainContent.classList.add('main-content');
+        }
+        
+        // Soru başlığını sticky header'a taşı
+        const soruBaslik = document.querySelector('.soru-baslik-container');
+        if (soruBaslik && !document.querySelector('.soru-sticky-header')) {
+            const stickyHeader = document.createElement('div');
+            stickyHeader.className = 'soru-sticky-header';
+            stickyHeader.innerHTML = soruBaslik.innerHTML;
+            document.body.prepend(stickyHeader);
+        }
+    }
     
-    // Ayrıca DOM tamamen yüklendiğinde de başa git (güvence)
-    document.addEventListener('DOMContentLoaded', function() {
-        window.scrollTo(0, 0);
-    });
+    // Sayfa yüklendiğinde çalıştır
+    window.addEventListener('load', initPage);
     
-    // Streamlit özel: FrameworkReady event'ını dinle
+    // Streamlit render olduğunda çalıştır
     document.addEventListener('streamlit:render', function() {
-        setTimeout(function() {
-            window.scrollTo(0, 0);
-        }, 100);
+        setTimeout(initPage, 100);
     });
+    
+    // Her 100ms'de bir kontrol et (güvence için)
+    setInterval(function() {
+        if (!document.querySelector('.soru-sticky-header') && document.querySelector('.soru-baslik-container')) {
+            initPage();
+        }
+    }, 100);
 </script>
-"""
-
-# JavaScript'i sayfaya ekle
-st.markdown(scroll_js, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # --- ANA SAYFA ---
 st.title("🏛️ SBKY Bölümü Ders Değerlendirme Anketi")
@@ -290,17 +322,6 @@ if st.session_state.current_step == 0:
         with col2:
             if st.button("✅ Ders Seçimini Tamamla ve Sorulara Başla", use_container_width=True, type="primary"):
                 st.session_state.current_step = 1
-                # Ekstra scroll script'i
-                st.markdown("""
-                <script>
-                    // Hemen başa scroll yap
-                    window.scrollTo(0, 0);
-                    // Bir saniye sonra tekrar (güvence)
-                    setTimeout(function() {
-                        window.scrollTo(0, 0);
-                    }, 100);
-                </script>
-                """, unsafe_allow_html=True)
                 st.rerun()
 
 # --- ANKET SORULARI (1-13) ---
@@ -311,15 +332,20 @@ elif 1 <= st.session_state.current_step <= 13:
     # Sadece seçili dersleri kullan
     aktif_dersler = st.session_state.selected_dersler
     
-    # Sabit başlık bölümü - sayfanın en üstünde
-    st.markdown('<div class="soru-ust-bolum">', unsafe_allow_html=True)
-    st.markdown(f"<div class='soru-baslik'>❓ Soru {s_no + 1} / 13</div>", unsafe_allow_html=True)
-    st.markdown(f"<h3>{soru_metni}</h3>", unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+    # STICKY SORU BAŞLIĞI - JavaScript tarafından alınacak
+    st.markdown(f'''
+    <div class="soru-baslik-container">
+        <h3>
+            <span class="soru-numara">❓ Soru {s_no + 1}</span>
+            <span class="toplam-soru">/ 13</span>
+        </h3>
+        <div class="soru-metni">{soru_metni}</div>
+    </div>
+    ''', unsafe_allow_html=True)
     
-    # Ölçek açıklaması - kompakt
+    # Ölçek açıklaması
     st.markdown("""
-    <div style="text-align: center; margin-bottom: 15px; font-size: 12px; color: #666;">
+    <div style="text-align: center; margin: 15px 0; font-size: 12px; color: #666; background: #f8f9fa; padding: 8px; border-radius: 5px;">
     <strong>Değerlendirme Ölçeği:</strong> 1 = Kesinlikle Katılmıyorum | 5 = Kesinlikle Katılıyorum
     </div>
     """, unsafe_allow_html=True)
@@ -359,11 +385,12 @@ elif 1 <= st.session_state.current_step <= 13:
         )
         
         # Puan göstergesi - daha kompakt
-        # Basit puan göstergesi
         st.markdown(f"""
-        <div style="text-align: center; margin-top: 5px;">
-            <div style="font-size: 14px; font-weight: bold; margin-bottom: 3px;">Seçilen Puan: <span style="font-size: 18px;">{puan}</span></div>
-            <div style="font-size: 20px; letter-spacing: 2px;">
+        <div style="text-align: center; margin-top: 10px;">
+            <div style="font-size: 14px; font-weight: bold; margin-bottom: 5px; color: #1e3a8a;">
+                Seçilen Puan: <span style="font-size: 18px; color: #3b82f6;">{puan}</span>
+            </div>
+            <div style="font-size: 22px; letter-spacing: 3px; margin-top: 5px;">
                 {"●" * puan}{"○" * (5 - puan)}
             </div>
         </div>
@@ -392,11 +419,16 @@ elif 1 <= st.session_state.current_step <= 13:
         if st.button(button_label, use_container_width=True, type="primary"):
             st.session_state.all_data.extend(current_responses)
             st.session_state.current_step += 1
-            # Sayfanın başına scroll yapmak için JavaScript
+            # Scroll için JavaScript - Streamlit'in render olmasını bekle
             st.markdown("""
             <script>
                 // Butona basıldığında başa scroll yap
                 window.scrollTo(0, 0);
+                
+                // Yeni sayfa render olduğunda tekrar başa git
+                setTimeout(function() {
+                    window.scrollTo(0, 0);
+                }, 100);
             </script>
             """, unsafe_allow_html=True)
             st.rerun()
@@ -434,12 +466,6 @@ else:
                         st.session_state.all_data = []
                         st.session_state.selected_dersler = []
                         st.session_state.selected_sinif = None
-                        # Son sayfada da başa scroll
-                        st.markdown("""
-                        <script>
-                            window.scrollTo(0, 0);
-                        </script>
-                        """, unsafe_allow_html=True)
                         st.rerun()
                     else:
                         st.error(f"❌ **Hata oluştu:** {response.text}")
@@ -455,14 +481,4 @@ st.markdown("""
 <p><strong>SBKY Bölümü Ders Değerlendirme Anketi</strong></p>
 <p>Bu anket, bölümümüzün eğitim kalitesini artırmak ve akreditasyon sürecine katkı sağlamak amacıyla düzenlenmiştir.</p>
 </div>
-""", unsafe_allow_html=True)
-
-# En son bir kez daha scroll script'i ekliyoruz (güvence için)
-st.markdown("""
-<script>
-    // Son çare: sayfa tamamen yüklendikten sonra başa git
-    setTimeout(function() {
-        window.scrollTo(0, 0);
-    }, 500);
-</script>
 """, unsafe_allow_html=True)
