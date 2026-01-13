@@ -176,8 +176,52 @@ st.markdown("""
         padding-top: 1rem;
         padding-bottom: 1rem;
     }
+    
+    /* Sayfa başına sabitlenen başlık */
+    .soru-ust-bolum {
+        position: sticky;
+        top: 0;
+        background-color: white;
+        z-index: 100;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #1e3a8a;
+        margin-bottom: 15px;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+        .soru-ust-bolum {
+            background-color: #0e1117;
+        }
+    }
 </style>
 """, unsafe_allow_html=True)
+
+# --- JavaScript for scrolling to top ---
+# Bu kodu EN BAŞTA ekliyoruz ki sayfa yüklendiğinde çalışsın
+scroll_js = """
+<script>
+    // Sayfa yüklendiğinde başa git
+    window.addEventListener('load', function() {
+        window.scrollTo(0, 0);
+    });
+    
+    // Ayrıca DOM tamamen yüklendiğinde de başa git (güvence)
+    document.addEventListener('DOMContentLoaded', function() {
+        window.scrollTo(0, 0);
+    });
+    
+    // Streamlit özel: FrameworkReady event'ını dinle
+    document.addEventListener('streamlit:render', function() {
+        setTimeout(function() {
+            window.scrollTo(0, 0);
+        }, 100);
+    });
+</script>
+"""
+
+# JavaScript'i sayfaya ekle
+st.markdown(scroll_js, unsafe_allow_html=True)
 
 # --- ANA SAYFA ---
 st.title("🏛️ SBKY Bölümü Ders Değerlendirme Anketi")
@@ -246,10 +290,15 @@ if st.session_state.current_step == 0:
         with col2:
             if st.button("✅ Ders Seçimini Tamamla ve Sorulara Başla", use_container_width=True, type="primary"):
                 st.session_state.current_step = 1
-                # Sayfanın başına gitmek için JavaScript
+                # Ekstra scroll script'i
                 st.markdown("""
                 <script>
+                    // Hemen başa scroll yap
                     window.scrollTo(0, 0);
+                    // Bir saniye sonra tekrar (güvence)
+                    setTimeout(function() {
+                        window.scrollTo(0, 0);
+                    }, 100);
                 </script>
                 """, unsafe_allow_html=True)
                 st.rerun()
@@ -259,21 +308,14 @@ elif 1 <= st.session_state.current_step <= 13:
     s_no = st.session_state.current_step - 1  # Soru indeksi (0-12)
     soru_metni = sorular[s_no]
     
-    # JavaScript ile sayfanın başına otomatik scroll
-    st.markdown("""
-    <script>
-        window.scrollTo(0, 0);
-    </script>
-    """, unsafe_allow_html=True)
-    
     # Sadece seçili dersleri kullan
     aktif_dersler = st.session_state.selected_dersler
     
-    # Soru başlığı - sayfanın en üstünde
+    # Sabit başlık bölümü - sayfanın en üstünde
+    st.markdown('<div class="soru-ust-bolum">', unsafe_allow_html=True)
     st.markdown(f"<div class='soru-baslik'>❓ Soru {s_no + 1} / 13</div>", unsafe_allow_html=True)
     st.markdown(f"<h3>{soru_metni}</h3>", unsafe_allow_html=True)
-    
-    st.markdown("---")
+    st.markdown('</div>', unsafe_allow_html=True)
     
     # Ölçek açıklaması - kompakt
     st.markdown("""
@@ -307,29 +349,25 @@ elif 1 <= st.session_state.current_step <= 13:
         """, unsafe_allow_html=True)
         
         # Puanlama slider'ı (1-5)
-        col_slider1, col_slider2, col_slider3 = st.columns([1, 3, 1])
-        with col_slider2:
-            puan = st.slider(
-                "",
-                min_value=1,
-                max_value=5,
-                value=3,
-                key=f"step_{s_no}_{ders}",
-                label_visibility="collapsed"
-            )
+        puan = st.slider(
+            "",
+            min_value=1,
+            max_value=5,
+            value=3,
+            key=f"step_{s_no}_{ders}",
+            label_visibility="collapsed"
+        )
         
         # Puan göstergesi - daha kompakt
-        col_gosterge1, col_gosterge2, col_gosterge3 = st.columns([1, 2, 1])
-        with col_gosterge2:
-            # Basit puan göstergesi
-            st.markdown(f"""
-            <div style="text-align: center; margin-top: 5px;">
-                <div style="font-size: 14px; font-weight: bold; margin-bottom: 3px;">Seçilen Puan: <span style="font-size: 18px;">{puan}</span></div>
-                <div style="font-size: 20px; letter-spacing: 2px;">
-                    {"●" * puan}{"○" * (5 - puan)}
-                </div>
+        # Basit puan göstergesi
+        st.markdown(f"""
+        <div style="text-align: center; margin-top: 5px;">
+            <div style="font-size: 14px; font-weight: bold; margin-bottom: 3px;">Seçilen Puan: <span style="font-size: 18px;">{puan}</span></div>
+            <div style="font-size: 20px; letter-spacing: 2px;">
+                {"●" * puan}{"○" * (5 - puan)}
             </div>
-            """, unsafe_allow_html=True)
+        </div>
+        """, unsafe_allow_html=True)
         
         current_responses.append({
             "Sinif": st.session_state.selected_sinif, 
@@ -354,17 +392,17 @@ elif 1 <= st.session_state.current_step <= 13:
         if st.button(button_label, use_container_width=True, type="primary"):
             st.session_state.all_data.extend(current_responses)
             st.session_state.current_step += 1
+            # Sayfanın başına scroll yapmak için JavaScript
+            st.markdown("""
+            <script>
+                // Butona basıldığında başa scroll yap
+                window.scrollTo(0, 0);
+            </script>
+            """, unsafe_allow_html=True)
             st.rerun()
 
 # --- GÖNDERME EKRANI ---
 else:
-    # JavaScript ile sayfanın başına otomatik scroll
-    st.markdown("""
-    <script>
-        window.scrollTo(0, 0);
-    </script>
-    """, unsafe_allow_html=True)
-    
     st.success("🎉 **Tebrikler! Tüm soruları tamamladınız.**")
     
     st.markdown("""
@@ -396,6 +434,12 @@ else:
                         st.session_state.all_data = []
                         st.session_state.selected_dersler = []
                         st.session_state.selected_sinif = None
+                        # Son sayfada da başa scroll
+                        st.markdown("""
+                        <script>
+                            window.scrollTo(0, 0);
+                        </script>
+                        """, unsafe_allow_html=True)
                         st.rerun()
                     else:
                         st.error(f"❌ **Hata oluştu:** {response.text}")
@@ -411,4 +455,14 @@ st.markdown("""
 <p><strong>SBKY Bölümü Ders Değerlendirme Anketi</strong></p>
 <p>Bu anket, bölümümüzün eğitim kalitesini artırmak ve akreditasyon sürecine katkı sağlamak amacıyla düzenlenmiştir.</p>
 </div>
+""", unsafe_allow_html=True)
+
+# En son bir kez daha scroll script'i ekliyoruz (güvence için)
+st.markdown("""
+<script>
+    // Son çare: sayfa tamamen yüklendikten sonra başa git
+    setTimeout(function() {
+        window.scrollTo(0, 0);
+    }, 500);
+</script>
 """, unsafe_allow_html=True)
