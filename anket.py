@@ -288,6 +288,34 @@ elif 1 <= st.session_state.current_step <= 13:
     </div>
     """, unsafe_allow_html=True)
     
+    # ÜSTE YERLEŞTİRİLEN YÖNLENDİRME BUTONU
+    if s_no < 12:  # Soru 1-12 için
+        button_label = f"➡️ Sonraki Soru ({s_no + 2}/13)"
+    else:  # Son soru için
+        button_label = "✅ Tüm Soruları Tamamla"
+    
+    # Son soru için özel talimat
+    if s_no == 12:  # Son soru (13. soru)
+        st.info("""
+        **📋 Son Kontrol:**  
+        Lütfen tüm dersler için verdiğiniz cevapları kontrol ediniz.  
+        Kontrolünüz bittikten sonra sayfanın **başına çıkıp** "Tüm Soruları Tamamla" butonuna basınız.
+        """)
+    
+    # YÖNLENDİRME BUTONU (devre dışı - sadece görsel)
+    col_top1, col_top2, col_top3 = st.columns([1, 2, 1])
+    with col_top2:
+        st.button(
+            button_label,
+            key=f"top_button_{s_no}",
+            use_container_width=True,
+            disabled=True,  # Buton devre dışı
+            help="Cevaplarınızı tamamladıktan sonra sayfa başına gelip bu butonu kullanınız"
+        )
+    
+    # BİLGİ MESAJI
+    st.markdown('<p style="text-align: center; color: #666; font-size: 12px; margin: 5px 0 15px 0;">⏬ <strong>Lütfen aşağıdaki dersleri değerlendiriniz:</strong> ⏬</p>', unsafe_allow_html=True)
+    
     current_responses = []
     
     # Dersleri ÜST ÜSTE - SIFIR BOŞLUK
@@ -320,17 +348,22 @@ elif 1 <= st.session_state.current_step <= 13:
     # Dersler bittikten sonra küçük boşluk
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # İlerleme butonu
+    # ALTTAKİ ASIL İŞLEVSEL BUTON
     if s_no < 12:  # Soru 1-12 için
-        button_label = f"➡️ Sonraki Soru ({s_no + 2}/13)"
+        button_label2 = f"➡️ Sonraki Soru ({s_no + 2}/13)"
     else:  # Son soru için
-        button_label = "✅ Tüm Soruları Tamamla"
+        button_label2 = "✅ Tüm Soruları Tamamla"
     
-    if st.button(button_label, use_container_width=True, type="primary"):
-        # Verileri kaydet
-        st.session_state.all_data.extend(current_responses)
-        st.session_state.current_step += 1
-        st.rerun()
+    # Buton konteyneri
+    st.markdown('<div style="margin-top: 20px;">', unsafe_allow_html=True)
+    col_bottom1, col_bottom2, col_bottom3 = st.columns([1, 2, 1])
+    with col_bottom2:
+        if st.button(button_label2, key=f"bottom_button_{s_no}", use_container_width=True, type="primary"):
+            # Verileri kaydet
+            st.session_state.all_data.extend(current_responses)
+            st.session_state.current_step += 1
+            st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # --- GÖNDERME EKRANI ---
 else:
