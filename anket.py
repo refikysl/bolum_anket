@@ -49,11 +49,11 @@ st.markdown("""
         padding-bottom: 0.2rem !important;
     }
     
-    /* SORU BAŞLIĞI - KOMPAKT */
+    /* SORU BAŞLIĞI - BÜYÜK PUNTOLU */
     .soru-ust-kisim {
         background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
         color: white;
-        padding: 6px 10px;
+        padding: 8px 12px;
         border-radius: 5px;
         margin-bottom: 5px;
         position: sticky;
@@ -62,18 +62,20 @@ st.markdown("""
     }
     
     .soru-numara {
-        font-size: 18px;
-        font-weight: bold;
-        color: #ffd700;
-        margin: 0;
-        padding: 0;
+        font-size: 20px !important;
+        font-weight: bold !important;
+        color: #ffd700 !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
     
     .soru-metni {
-        font-size: 14px;
-        line-height: 1.2;
-        margin: 2px 0 0 0;
-        padding: 0;
+        font-size: 18px !important;
+        line-height: 1.3 !important;
+        margin: 3px 0 0 0 !important;
+        padding: 0 !important;
+        color: white !important;
+        font-weight: 600 !important;
     }
     
     /* ÖLÇEK AÇIKLAMASI - KÜÇÜK */
@@ -152,16 +154,16 @@ st.markdown("""
     /* MOBİL İÇİN */
     @media (max-width: 768px) {
         .soru-ust-kisim {
-            padding: 5px 8px;
+            padding: 6px 10px;
             margin-bottom: 4px;
         }
         
         .soru-numara {
-            font-size: 16px;
+            font-size: 18px !important;
         }
         
         .soru-metni {
-            font-size: 13px;
+            font-size: 16px !important;
         }
         
         .ders-adi {
@@ -182,6 +184,10 @@ st.markdown("""
     
     /* Çok küçük ekranlar için */
     @media (max-width: 480px) {
+        .soru-metni {
+            font-size: 15px !important;
+        }
+        
         .ders-adi {
             font-size: 15px !important;
         }
@@ -267,7 +273,7 @@ elif 1 <= st.session_state.current_step <= 13:
     # Sadece seçili dersleri kullan
     aktif_dersler = st.session_state.selected_dersler
     
-    # SABİT SORU BAŞLIĞI - KOMPAKT
+    # SABİT SORU BAŞLIĞI - BÜYÜK PUNTOLU
     st.markdown(f"""
     <div class="soru-ust-kisim">
         <div class="soru-numara">❓ Soru {s_no + 1} / 13</div>
