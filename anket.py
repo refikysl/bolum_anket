@@ -39,6 +39,8 @@ if 'selected_dersler' not in st.session_state:
     st.session_state.selected_dersler = []
 if 'selected_sinif' not in st.session_state:
     st.session_state.selected_sinif = None
+if 'all_sliders_filled' not in st.session_state:
+    st.session_state.all_sliders_filled = False
 
 # --- STİL - MİNİMAL, SIFIR BOŞLUK ---
 st.markdown("""
@@ -263,6 +265,7 @@ if st.session_state.current_step == 0:
         with col2:
             if st.button("✅ Ders Seçimini Tamamla ve Sorulara Başla", use_container_width=True, type="primary"):
                 st.session_state.current_step = 1
+                st.session_state.all_sliders_filled = False
                 st.rerun()
 
 # --- ANKET SORULARI (1-13) ---
@@ -288,34 +291,27 @@ elif 1 <= st.session_state.current_step <= 13:
     </div>
     """, unsafe_allow_html=True)
     
-    # ÜSTE YERLEŞTİRİLEN YÖNLENDİRME BUTONU
+    # BUTONU ÜSTE YERLEŞTİR (başlangıçta devre dışı)
     if s_no < 12:  # Soru 1-12 için
         button_label = f"➡️ Sonraki Soru ({s_no + 2}/13)"
+        button_disabled = True  # Başlangıçta devre dışı
     else:  # Son soru için
         button_label = "✅ Tüm Soruları Tamamla"
+        button_disabled = True  # Başlangıçta devre dışı
     
-    # Son soru için özel talimat
-    if s_no == 12:  # Son soru (13. soru)
-        st.info("""
-        **📋 Son Kontrol:**  
-        Lütfen tüm dersler için verdiğiniz cevapları kontrol ediniz.  
-        Kontrolünüz bittikten sonra sayfanın **başına çıkıp** "Tüm Soruları Tamamla" butonuna basınız.
-        """)
-    
-    # YÖNLENDİRME BUTONU (devre dışı - sadece görsel)
+    # Buton konteyneri - SAYFA BAŞINDA
     col_top1, col_top2, col_top3 = st.columns([1, 2, 1])
     with col_top2:
-        st.button(
+        next_button_clicked = st.button(
             button_label,
             key=f"top_button_{s_no}",
             use_container_width=True,
-            disabled=True,  # Buton devre dışı
-            help="Cevaplarınızı tamamladıktan sonra sayfa başına gelip bu butonu kullanınız"
+            disabled=button_disabled,  # Başlangıçta devre dışı
+            type="primary"
         )
     
-    # BİLGİ MESAJI
-    st.markdown('<p style="text-align: center; color: #666; font-size: 12px; margin: 5px 0 15px 0;">⏬ <strong>Lütfen aşağıdaki dersleri değerlendiriniz:</strong> ⏬</p>', unsafe_allow_html=True)
-    
+    # Tüm slider'ların doldurulup doldurulmadığını kontrol et
+    all_filled = True
     current_responses = []
     
     # Dersleri ÜST ÜSTE - SIFIR BOŞLUK
@@ -345,25 +341,44 @@ elif 1 <= st.session_state.current_step <= 13:
         
         st.markdown('</div>', unsafe_allow_html=True)
     
-    # Dersler bittikten sonra küçük boşluk
-    st.markdown("<br>", unsafe_allow_html=True)
+    # Dersler bittikten sonra SON SORU İÇİN ÖZEL MESAJ
+    if s_no == 12:  # Son soru (13. soru)
+        st.markdown("""
+        <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; border-left: 5px solid #ffc107; margin: 15px 0; color: #000000;">
+        <h4 style="color: #856404; margin-top: 0;">📋 Son Kontrol</h4>
+        <p><strong>Şimdi cevaplarınızı kontrol ederek sayfa başına gidiniz ve sonraki soruya geçiniz.</strong></p>
+        <p>Üstteki "Tüm Soruları Tamamla" butonu tüm dersler için değerlendirme yaptıktan sonra aktif olacaktır.</p>
+        </div>
+        """, unsafe_allow_html=True)
     
-    # ALTTAKİ ASIL İŞLEVSEL BUTON
-    if s_no < 12:  # Soru 1-12 için
-        button_label2 = f"➡️ Sonraki Soru ({s_no + 2}/13)"
-    else:  # Son soru için
-        button_label2 = "✅ Tüm Soruları Tamamla"
+    # Sayfayı yeniden render etmek için buton
+    col_check1, col_check2, col_check3 = st.columns([1, 2, 1])
+    with col_check2:
+        if st.button("🔃 Değerlendirmeleri Kontrol Et", key=f"check_{s_no}", use_container_width=True):
+            # Slider değerlerini kontrol et
+            slider_values_filled = True
+            for ders in aktif_dersler:
+                slider_key = f"step_{s_no}_{ders}"
+                if slider_key not in st.session_state:
+                    slider_values_filled = False
+                    break
+            
+            if slider_values_filled:
+                st.session_state.all_sliders_filled = True
+                st.success("✓ Tüm dersler için değerlendirme yaptınız! Şimdi sayfa başına gidip 'Sonraki Soru' butonunu kullanabilirsiniz.")
+                st.rerun()
+            else:
+                st.warning("⚠️ Lütfen tüm dersler için değerlendirme yapınız!")
     
-    # Buton konteyneri
-    st.markdown('<div style="margin-top: 20px;">', unsafe_allow_html=True)
-    col_bottom1, col_bottom2, col_bottom3 = st.columns([1, 2, 1])
-    with col_bottom2:
-        if st.button(button_label2, key=f"bottom_button_{s_no}", use_container_width=True, type="primary"):
-            # Verileri kaydet
-            st.session_state.all_data.extend(current_responses)
-            st.session_state.current_step += 1
-            st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
+    # Buton tıklandıysa ve tüm slider'lar doldurulduysa işle
+    if next_button_clicked and st.session_state.all_sliders_filled:
+        # Verileri kaydet
+        st.session_state.all_data.extend(current_responses)
+        st.session_state.current_step += 1
+        st.session_state.all_sliders_filled = False
+        st.rerun()
+    elif next_button_clicked and not st.session_state.all_sliders_filled:
+        st.warning("⚠️ Lütfen önce tüm dersler için değerlendirme yapınız ve 'Değerlendirmeleri Kontrol Et' butonuna basınız!")
 
 # --- GÖNDERME EKRANI ---
 else:
@@ -398,6 +413,7 @@ else:
                         st.session_state.all_data = []
                         st.session_state.selected_dersler = []
                         st.session_state.selected_sinif = None
+                        st.session_state.all_sliders_filled = False
                         st.rerun()
                     else:
                         st.error(f"❌ **Hata oluştu:** {response.text}")
