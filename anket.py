@@ -39,8 +39,8 @@ if 'selected_dersler' not in st.session_state:
     st.session_state.selected_dersler = []
 if 'selected_sinif' not in st.session_state:
     st.session_state.selected_sinif = None
-if 'modified_sliders' not in st.session_state:
-    st.session_state.modified_sliders = {}
+if 'radio_selections' not in st.session_state:
+    st.session_state.radio_selections = {}
 
 # --- STİL - MİNİMAL, SIFIR BOŞLUK ---
 st.markdown("""
@@ -94,9 +94,11 @@ st.markdown("""
     
     /* DERS BLOĞU - SIFIR BOŞLUK */
     .ders-blok {
-        margin: 0 !important;
-        padding: 0 !important;
-        border-bottom: 1px solid #f0f0f0;
+        margin: 10px 0 !important;
+        padding: 10px !important;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        background-color: #f9f9f9;
     }
     
     /* DERS ADI - BÜYÜK, BEYAZ, OKUNAKLI */
@@ -104,46 +106,44 @@ st.markdown("""
         font-size: 18px !important;
         font-weight: 700 !important;
         color: white !important;
-        margin: 3px 0 1px 0 !important;
-        padding: 4px 5px !important;
+        margin: 0 0 10px 0 !important;
+        padding: 8px 12px !important;
         display: block;
         background-color: rgba(30, 58, 138, 0.9);
-        border-radius: 4px;
+        border-radius: 6px;
         text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
     }
     
-    /* SLİDER - TEK PARÇA, İNCE */
-    .stSlider {
-        margin: 0 !important;
-        padding: 0 5px 5px 5px !important;
+    /* RADIO BUTON STİLİ */
+    .stRadio > div {
+        background-color: white;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #e0e0e0;
     }
     
-    .stSlider > div {
-        margin: 0 !important;
-        padding: 0 !important;
+    /* RADIO BUTON ETİKETLERİ */
+    .stRadio > div > label {
+        font-size: 14px !important;
     }
     
-    .stSlider > div > div {
-        margin: 0 !important;
-        padding: 0 !important;
+    /* RADIO BUTON KONTEYNIRI */
+    .radio-container {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 5px;
     }
     
-    .stSlider > div > div > div {
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-    
-    .stSlider > div > div > div > div {
-        background: linear-gradient(90deg, #ff4b4b 0%, #ffa726 25%, #ffeb3b 50%, #4caf50 75%, #2e7d32 100%);
-        height: 6px !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-    
-    .stSlider > div > div > div > div > div {
-        height: 16px !important;
-        width: 16px !important;
-        margin: 0 !important;
+    /* RADIO BUTON ÖĞELERİ */
+    .radio-item {
+        flex: 1;
+        min-width: 60px;
+        text-align: center;
+        padding: 5px;
+        border-radius: 4px;
+        background-color: #f8f9fa;
+        border: 1px solid #e0e0e0;
     }
     
     /* Buton */
@@ -170,7 +170,7 @@ st.markdown("""
         
         .ders-adi {
             font-size: 16px !important;
-            padding: 3px 4px !important;
+            padding: 6px 10px !important;
         }
         
         .olcek-aciklama {
@@ -179,8 +179,10 @@ st.markdown("""
             margin: 2px 0 4px 0;
         }
         
-        .stSlider {
-            padding: 0 5px 4px 5px !important;
+        .radio-item {
+            min-width: 50px;
+            padding: 4px;
+            font-size: 12px;
         }
     }
     
@@ -192,6 +194,15 @@ st.markdown("""
         
         .ders-adi {
             font-size: 15px !important;
+        }
+        
+        .radio-container {
+            flex-direction: column;
+        }
+        
+        .radio-item {
+            min-width: 100%;
+            margin-bottom: 5px;
         }
     }
 </style>
@@ -265,7 +276,7 @@ if st.session_state.current_step == 0:
         with col2:
             if st.button("✅ Ders Seçimini Tamamla ve Sorulara Başla", use_container_width=True, type="primary"):
                 st.session_state.current_step = 1
-                st.session_state.modified_sliders = {}
+                st.session_state.radio_selections = {}
                 st.rerun()
 
 # --- ANKET SORULARI (1-13) ---
@@ -297,29 +308,29 @@ elif 1 <= st.session_state.current_step <= 13:
     else:  # Son soru için
         button_label = "✅ Tüm Soruları Tamamla"
     
-    # Tüm slider'ların değiştirilip değiştirilmediğini kontrol et
-    all_sliders_modified = True
-    modified_sliders_key = f"modified_sliders_{s_no}"
+    # Tüm radio button'ların seçilip seçilmediğini kontrol et
+    all_radio_selected = True
+    radio_key = f"radio_{s_no}"
     
-    if modified_sliders_key not in st.session_state.modified_sliders:
-        st.session_state.modified_sliders[modified_sliders_key] = {}
+    if radio_key not in st.session_state.radio_selections:
+        st.session_state.radio_selections[radio_key] = {}
     
     for ders in aktif_dersler:
-        slider_key = f"step_{s_no}_{ders}"
-        if slider_key not in st.session_state.modified_sliders[modified_sliders_key]:
-            all_sliders_modified = False
+        ders_key = f"{radio_key}_{ders}"
+        if ders_key not in st.session_state.radio_selections[radio_key]:
+            all_radio_selected = False
     
     # Buton konteyneri - SAYFA BAŞINDA (HER ZAMAN DEVRE DIŞI BAŞLAT)
     col_top1, col_top2, col_top3 = st.columns([1, 2, 1])
     with col_top2:
         # Buton her zaman başlangıçta devre dışı
-        next_button_disabled = not all_sliders_modified
+        next_button_disabled = not all_radio_selected
         
         next_button_clicked = st.button(
             button_label,
             key=f"top_button_{s_no}",
             use_container_width=True,
-            disabled=next_button_disabled,  # Sadece tüm slider'lar değiştirilmişse aktif
+            disabled=next_button_disabled,  # Sadece tüm radio button'lar seçilmişse aktif
             type="primary"
         )
     
@@ -333,64 +344,68 @@ elif 1 <= st.session_state.current_step <= 13:
         # Ders adı - BÜYÜK, BEYAZ, OKUNAKLI
         st.markdown(f'<div class="ders-adi">{idx+1}. {ders}</div>', unsafe_allow_html=True)
         
-        # Puanlama slider'ı (1-5) - ALTTA, TEK PARÇA
-        slider_key = f"step_{s_no}_{ders}"
+        # Puanlama radio button'ları (1-5)
+        ders_key = f"{radio_key}_{ders}"
         
-        # Slider için benzersiz bir key oluştur
-        slider_session_key = f"{slider_key}_slider"
+        # Radio button seçenekleri
+        options = {
+            "1": "Kesinlikle Katılmıyorum",
+            "2": "Katılmıyorum", 
+            "3": "Kararsızım",
+            "4": "Katılıyorum",
+            "5": "Kesinlikle Katılıyorum"
+        }
         
-        # Slider değeri
-        puan = st.slider(
-            "",  # Boş label
-            min_value=1,
-            max_value=5,
-            value=3,  # Varsayılan değer
-            key=slider_session_key,
+        # Radio button'u yatay olarak göster
+        selected_option = st.radio(
+            "",
+            options=list(options.keys()),
+            format_func=lambda x: f"{x} - {options[x]}",
+            key=ders_key,
+            horizontal=True,
             label_visibility="collapsed"
         )
         
-        # Slider değeri değişti mi kontrol et
-        # Eğer slider henüz modified_sliders'da kayıtlı değilse ve değeri 3'ten farklıysa
-        if slider_key not in st.session_state.modified_sliders[modified_sliders_key]:
-            if puan != 3:
-                st.session_state.modified_sliders[modified_sliders_key][slider_key] = True
-        
-        current_responses.append({
-            "Sinif": st.session_state.selected_sinif, 
-            "Ders": ders, 
-            "Soru_No": s_no + 1, 
-            "Puan": puan
-        })
+        # Seçimi kaydet
+        if selected_option:
+            st.session_state.radio_selections[radio_key][ders_key] = True
+            
+            # Puanı sayıya çevir
+            puan = int(selected_option)
+            
+            current_responses.append({
+                "Sinif": st.session_state.selected_sinif, 
+                "Ders": ders, 
+                "Soru_No": s_no + 1, 
+                "Puan": puan
+            })
         
         st.markdown('</div>', unsafe_allow_html=True)
     
-    # Kaç slider'ın değiştirildiğini göster
-    modified_count = len(st.session_state.modified_sliders[modified_sliders_key])
+    # Kaç dersin değerlendirildiğini göster
+    selected_count = len(st.session_state.radio_selections[radio_key])
     total_count = len(aktif_dersler)
     
     # "TÜM DERSLERİ DEĞERLENDİRDİM" BUTONU - ÖNCE BU
     col_check1, col_check2, col_check3 = st.columns([1, 2, 1])
     with col_check2:
         if st.button("✓ Tüm Dersleri Değerlendirdim", key=f"check_{s_no}", use_container_width=True):
-            # Tüm slider'ların 3'ten farklı olup olmadığını kontrol et
-            all_modified = True
-            for idx, ders in enumerate(aktif_dersler):
-                slider_session_key = f"step_{s_no}_{ders}_slider"
-                if slider_session_key in st.session_state:
-                    puan = st.session_state[slider_session_key]
-                    if puan == 3 and f"step_{s_no}_{ders}" not in st.session_state.modified_sliders[modified_sliders_key]:
-                        all_modified = False
+            # Tüm radio button'ların seçilip seçilmediğini kontrol et
+            all_selected = True
+            missing_dersler = []
             
-            if all_modified:
-                # Tüm slider'ları modified olarak işaretle
-                for ders in aktif_dersler:
-                    slider_key = f"step_{s_no}_{ders}"
-                    st.session_state.modified_sliders[modified_sliders_key][slider_key] = True
-                
+            for ders in aktif_dersler:
+                ders_key = f"{radio_key}_{ders}"
+                if ders_key not in st.session_state.radio_selections[radio_key]:
+                    all_selected = False
+                    missing_dersler.append(ders)
+            
+            if all_selected:
                 st.success("✓ Tüm dersleri değerlendirdiniz! Şimdi sayfa başına gidip 'Sonraki Soru' butonunu kullanabilirsiniz.")
                 st.rerun()
             else:
-                st.error("❌ Hala bazı dersleri değerlendirmediniz! Her bir ders için slider'ı hareket ettirmelisiniz. 3 vereceğiniz derslerde bile slider'ı en az bir kez sola ya da sağa hareket ettirip tekrar 3'e getirebilirsiniz")
+                missing_list = ", ".join(missing_dersler)
+                st.error(f"❌ Hala bazı dersleri değerlendirmediniz! Lütfen şu dersleri değerlendirin: {missing_list}")
     
     # Dersler bittikten sonra HER SORU İÇİN MESAJ (1-12. sorular için) - SONRA BU
     if s_no < 12:  # Sadece 1-12. sorular için
@@ -402,18 +417,18 @@ elif 1 <= st.session_state.current_step <= 13:
         """, unsafe_allow_html=True)
     
     # Değerlendirme durumu bilgisi
-    if modified_count < total_count:
-        st.warning(f"⚠️ **{modified_count}/{total_count} dersi değerlendirdiniz.** Lütfen tüm dersleri değerlendirip yukarıdaki 'Tüm Dersleri Değerlendirdim' butonuna basınız.")
+    if selected_count < total_count:
+        st.warning(f"⚠️ **{selected_count}/{total_count} dersi değerlendirdiniz.** Lütfen tüm dersleri değerlendirip yukarıdaki 'Tüm Dersleri Değerlendirdim' butonuna basınız.")
     
-    # Buton tıklandıysa ve tüm slider'lar değiştirildiyse işle
+    # Buton tıklandıysa ve tüm radio button'lar seçildiyse işle
     if next_button_clicked:
-        if all_sliders_modified:
+        if all_radio_selected:
             # Verileri kaydet
             st.session_state.all_data.extend(current_responses)
             st.session_state.current_step += 1
             st.rerun()
         else:
-            st.error("❌ **Lütfen tüm dersleri değerlendiriniz!**")
+            st.error("❌ **Lütfen tüm dersleri değerlendiriniz!** Her bir ders için bir puan seçmelisiniz.")
 
 # --- GÖNDERME EKRANI ---
 else:
@@ -448,7 +463,7 @@ else:
                         st.session_state.all_data = []
                         st.session_state.selected_dersler = []
                         st.session_state.selected_sinif = None
-                        st.session_state.modified_sliders = {}
+                        st.session_state.radio_selections = {}
                         st.rerun()
                     else:
                         st.error(f"❌ **Hata oluştu:** {response.text}")
