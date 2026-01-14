@@ -39,8 +39,8 @@ if 'selected_dersler' not in st.session_state:
     st.session_state.selected_dersler = []
 if 'selected_sinif' not in st.session_state:
     st.session_state.selected_sinif = None
-if 'all_sliders_filled' not in st.session_state:
-    st.session_state.all_sliders_filled = False
+if 'modified_sliders' not in st.session_state:
+    st.session_state.modified_sliders = {}
 
 # --- STİL - MİNİMAL, SIFIR BOŞLUK ---
 st.markdown("""
@@ -265,7 +265,7 @@ if st.session_state.current_step == 0:
         with col2:
             if st.button("✅ Ders Seçimini Tamamla ve Sorulara Başla", use_container_width=True, type="primary"):
                 st.session_state.current_step = 1
-                st.session_state.all_sliders_filled = False
+                st.session_state.modified_sliders = {}
                 st.rerun()
 
 # --- ANKET SORULARI (1-13) ---
@@ -291,27 +291,38 @@ elif 1 <= st.session_state.current_step <= 13:
     </div>
     """, unsafe_allow_html=True)
     
-    # BUTONU ÜSTE YERLEŞTİR (başlangıçta devre dışı)
+    # BUTONU ÜSTE YERLEŞTİR
     if s_no < 12:  # Soru 1-12 için
         button_label = f"➡️ Sonraki Soru ({s_no + 2}/13)"
-        button_disabled = True  # Başlangıçta devre dışı
     else:  # Son soru için
         button_label = "✅ Tüm Soruları Tamamla"
-        button_disabled = True  # Başlangıçta devre dışı
     
-    # Buton konteyneri - SAYFA BAŞINDA
+    # Tüm slider'ların değiştirilip değiştirilmediğini kontrol et
+    all_sliders_modified = True
+    modified_sliders_key = f"modified_sliders_{s_no}"
+    
+    if modified_sliders_key not in st.session_state.modified_sliders:
+        st.session_state.modified_sliders[modified_sliders_key] = {}
+    
+    for ders in aktif_dersler:
+        slider_key = f"step_{s_no}_{ders}"
+        if slider_key not in st.session_state.modified_sliders[modified_sliders_key]:
+            all_sliders_modified = False
+    
+    # Buton konteyneri - SAYFA BAŞINDA (HER ZAMAN DEVRE DIŞI BAŞLAT)
     col_top1, col_top2, col_top3 = st.columns([1, 2, 1])
     with col_top2:
+        # Buton her zaman başlangıçta devre dışı
+        next_button_disabled = not all_sliders_modified
+        
         next_button_clicked = st.button(
             button_label,
             key=f"top_button_{s_no}",
             use_container_width=True,
-            disabled=button_disabled,  # Başlangıçta devre dışı
+            disabled=next_button_disabled,  # Sadece tüm slider'lar değiştirilmişse aktif
             type="primary"
         )
     
-    # Tüm slider'ların doldurulup doldurulmadığını kontrol et
-    all_filled = True
     current_responses = []
     
     # Dersleri ÜST ÜSTE - SIFIR BOŞLUK
@@ -323,14 +334,26 @@ elif 1 <= st.session_state.current_step <= 13:
         st.markdown(f'<div class="ders-adi">{idx+1}. {ders}</div>', unsafe_allow_html=True)
         
         # Puanlama slider'ı (1-5) - ALTTA, TEK PARÇA
+        slider_key = f"step_{s_no}_{ders}"
+        
+        # Slider için benzersiz bir key oluştur
+        slider_session_key = f"{slider_key}_slider"
+        
+        # Slider değeri
         puan = st.slider(
             "",  # Boş label
             min_value=1,
             max_value=5,
-            value=3,  # Varsayılan orta değer
-            key=f"step_{s_no}_{ders}",
+            value=3,  # Varsayılan değer
+            key=slider_session_key,
             label_visibility="collapsed"
         )
+        
+        # Slider değeri değişti mi kontrol et
+        # Eğer slider henüz modified_sliders'da kayıtlı değilse ve değeri 3'ten farklıysa
+        if slider_key not in st.session_state.modified_sliders[modified_sliders_key]:
+            if puan != 3:
+                st.session_state.modified_sliders[modified_sliders_key][slider_key] = True
         
         current_responses.append({
             "Sinif": st.session_state.selected_sinif, 
@@ -341,44 +364,56 @@ elif 1 <= st.session_state.current_step <= 13:
         
         st.markdown('</div>', unsafe_allow_html=True)
     
-    # Dersler bittikten sonra SON SORU İÇİN ÖZEL MESAJ
-    if s_no == 12:  # Son soru (13. soru)
+    # Kaç slider'ın değiştirildiğini göster
+    modified_count = len(st.session_state.modified_sliders[modified_sliders_key])
+    total_count = len(aktif_dersler)
+    
+    # "TÜM DERSLERİ DEĞERLENDİRDİM" BUTONU - ÖNCE BU
+    col_check1, col_check2, col_check3 = st.columns([1, 2, 1])
+    with col_check2:
+        if st.button("✓ Tüm Dersleri Değerlendirdim", key=f"check_{s_no}", use_container_width=True):
+            # Tüm slider'ların 3'ten farklı olup olmadığını kontrol et
+            all_modified = True
+            for idx, ders in enumerate(aktif_dersler):
+                slider_session_key = f"step_{s_no}_{ders}_slider"
+                if slider_session_key in st.session_state:
+                    puan = st.session_state[slider_session_key]
+                    if puan == 3 and f"step_{s_no}_{ders}" not in st.session_state.modified_sliders[modified_sliders_key]:
+                        all_modified = False
+            
+            if all_modified:
+                # Tüm slider'ları modified olarak işaretle
+                for ders in aktif_dersler:
+                    slider_key = f"step_{s_no}_{ders}"
+                    st.session_state.modified_sliders[modified_sliders_key][slider_key] = True
+                
+                st.success("✓ Tüm dersleri değerlendirdiniz! Şimdi sayfa başına gidip 'Sonraki Soru' butonunu kullanabilirsiniz.")
+                st.rerun()
+            else:
+                st.error("❌ Hala bazı dersleri değerlendirmediniz! Her bir ders için slider'ı hareket ettirmelisiniz. 3 vereceğiniz derslerde bile slider'ı en az bir kez sola ya da sağa hareket ettirip tekrar 3'e getirebilirsiniz")
+    
+    # Dersler bittikten sonra HER SORU İÇİN MESAJ (1-12. sorular için) - SONRA BU
+    if s_no < 12:  # Sadece 1-12. sorular için
         st.markdown("""
         <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; border-left: 5px solid #ffc107; margin: 15px 0; color: #000000;">
-        <h4 style="color: #856404; margin-top: 0;">📋 Son Kontrol</h4>
+        <h4 style="color: #856404; margin-top: 0;">📋 Önemli Hatırlatma</h4>
         <p><strong>Şimdi cevaplarınızı kontrol ederek sayfa başına gidiniz ve sonraki soruya geçiniz.</strong></p>
-        <p>Üstteki "Tüm Soruları Tamamla" butonu tüm dersler için değerlendirme yaptıktan sonra aktif olacaktır.</p>
         </div>
         """, unsafe_allow_html=True)
     
-    # Sayfayı yeniden render etmek için buton
-    col_check1, col_check2, col_check3 = st.columns([1, 2, 1])
-    with col_check2:
-        if st.button("🔃 Değerlendirmeleri Kontrol Et", key=f"check_{s_no}", use_container_width=True):
-            # Slider değerlerini kontrol et
-            slider_values_filled = True
-            for ders in aktif_dersler:
-                slider_key = f"step_{s_no}_{ders}"
-                if slider_key not in st.session_state:
-                    slider_values_filled = False
-                    break
-            
-            if slider_values_filled:
-                st.session_state.all_sliders_filled = True
-                st.success("✓ Tüm dersler için değerlendirme yaptınız! Şimdi sayfa başına gidip 'Sonraki Soru' butonunu kullanabilirsiniz.")
-                st.rerun()
-            else:
-                st.warning("⚠️ Lütfen tüm dersler için değerlendirme yapınız!")
+    # Değerlendirme durumu bilgisi
+    if modified_count < total_count:
+        st.warning(f"⚠️ **{modified_count}/{total_count} dersi değerlendirdiniz.** Lütfen tüm dersleri değerlendirip yukarıdaki 'Tüm Dersleri Değerlendirdim' butonuna basınız.")
     
-    # Buton tıklandıysa ve tüm slider'lar doldurulduysa işle
-    if next_button_clicked and st.session_state.all_sliders_filled:
-        # Verileri kaydet
-        st.session_state.all_data.extend(current_responses)
-        st.session_state.current_step += 1
-        st.session_state.all_sliders_filled = False
-        st.rerun()
-    elif next_button_clicked and not st.session_state.all_sliders_filled:
-        st.warning("⚠️ Lütfen önce tüm dersler için değerlendirme yapınız ve 'Değerlendirmeleri Kontrol Et' butonuna basınız!")
+    # Buton tıklandıysa ve tüm slider'lar değiştirildiyse işle
+    if next_button_clicked:
+        if all_sliders_modified:
+            # Verileri kaydet
+            st.session_state.all_data.extend(current_responses)
+            st.session_state.current_step += 1
+            st.rerun()
+        else:
+            st.error("❌ **Lütfen tüm dersleri değerlendiriniz!**")
 
 # --- GÖNDERME EKRANI ---
 else:
@@ -413,7 +448,7 @@ else:
                         st.session_state.all_data = []
                         st.session_state.selected_dersler = []
                         st.session_state.selected_sinif = None
-                        st.session_state.all_sliders_filled = False
+                        st.session_state.modified_sliders = {}
                         st.rerun()
                     else:
                         st.error(f"❌ **Hata oluştu:** {response.text}")
